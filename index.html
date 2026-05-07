@@ -136,6 +136,45 @@
   .expand-icon { color: var(--muted); font-size: 20px; transition: transform 0.2s; }
   .expand-icon.open { transform: rotate(180deg); }
 
+  /* ── WORKOUT GUIDE ── */
+  .guide-toggle {
+    padding: 11px 16px; border-bottom: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; background: var(--surface2);
+  }
+  .guide-toggle-label {
+    font-size: 11px; font-family: var(--mono); color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.07em;
+  }
+  .guide-chevron { color: var(--muted); font-size: 16px; transition: transform 0.2s; }
+  .guide-chevron.open { transform: rotate(180deg); }
+  .guide-panel {
+    display: none; background: var(--surface2);
+    border-bottom: 0.5px solid var(--border); padding: 14px 16px;
+  }
+  .guide-benefit {
+    font-size: 12px; color: var(--muted); line-height: 1.65;
+    border-left: 2px solid var(--accent); padding-left: 10px;
+    margin-bottom: 14px;
+  }
+  .guide-section-title {
+    font-size: 10px; font-family: var(--mono); color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
+  }
+  .guide-checklist { list-style: none; margin-bottom: 14px; }
+  .guide-checklist li {
+    font-size: 12px; color: var(--text); line-height: 1.55;
+    padding: 5px 0; border-bottom: 0.5px solid var(--border);
+    display: flex; gap: 8px;
+  }
+  .guide-checklist li:last-child { border-bottom: none; }
+  .guide-check { color: var(--accent); flex-shrink: 0; }
+  .guide-ex-list { list-style: none; }
+  .guide-ex-item { padding: 8px 0; border-bottom: 0.5px solid var(--border); }
+  .guide-ex-item:last-child { border-bottom: none; }
+  .guide-ex-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .guide-ex-cue { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
   .exercise-rows { border-top: 0.5px solid var(--border); }
   .exercise-row {
     padding: 12px 16px; border-bottom: 0.5px solid var(--border);
@@ -450,6 +489,34 @@ const PROGRAM = {
       days: [
         {
           id: "A", type: "heavy", label: "Heavy lift", name: "Day A — Lower body", when: "Tuesday evening",
+          warmup: {
+            duration: "8–10 min",
+            steps: [
+              { icon: "🚴", label: "Bike or row", detail: "5 min at easy pace — raises core temp and gets blood into your legs after a day of sitting." },
+              { icon: "🦵", label: "Leg swing (front/back)", detail: "10 each leg — stand tall, swing one leg forward and back like a pendulum. Loosens the hip flexors you'll be loading under the bar." },
+              { icon: "🦵", label: "Leg swing (side to side)", detail: "10 each leg — same idea but laterally. Opens the hips and primes the abductors for squat depth." },
+              { icon: "🔄", label: "Hip circle", detail: "10 each direction — hands on hips, draw big circles with your pelvis. Activates the glutes and lubricates the hip joint." },
+              { icon: "🧘", label: "Deep squat hold", detail: "30 seconds — feet hip-width, sink into a deep squat and hold. Use a rack for balance if needed. This is your mobility check before adding load." },
+              { icon: "🏋️", label: "Warm-up squat sets", detail: "2–3 sets working up to your working weight: e.g. 40% × 5, 60% × 3, 80% × 2. Don't skip these — at 88–92% your joints need to be fully primed." }
+            ]
+          },
+          guide: {
+            benefit: "High-load squatting and hip hinge work builds the maximal strength base the study identifies as the primary driver of running economy gains — especially at faster marathon paces. You're training your nervous system to recruit more muscle fibers per stride, which means less effort at the same speed.",
+            checklist: [
+              "Eat a full meal 2–3 hours before. This is your heaviest session of the week — don't train fasted.",
+              "Warm up thoroughly: 10 min easy bike or row, then 2–3 warm-up sets on the squat working up to your working weight.",
+              "Target RPE 8 in weeks 1–2. Leave one rep in the tank on every set — don't grind.",
+              "Rest fully between sets: 3 full minutes minimum. Use the timer. Cutting rest kills the quality of subsequent sets at these loads.",
+              "If your form breaks down on any rep, end the set. Log the reps completed — don't push through technical failure."
+            ],
+            exercises: [
+              { name: "Back squat", cue: "Bar on upper traps, big breath and brace before you unrack. Descend 2–3 seconds under control, drive the floor away on the way up. Knees track over toes throughout. At 88–92% these should feel heavy but technically clean." },
+              { name: "Romanian deadlift", cue: "Hinge at the hips, not the lower back. Push your hips back until you feel a strong hamstring stretch — usually when the bar passes your knees. Keep the bar close to your legs. Squeeze your glutes to stand." },
+              { name: "Barbell hip thrust", cue: "Upper back on bench, bar padded across your hips. Drive through your heels, squeeze your glutes hard at the top, hold 1 second. Don't hyperextend your lower back at lockout — ribs stay down." },
+              { name: "Single-leg press", cue: "One foot centered on the plate. Full range of motion — bring the platform close to your chest before pressing. Keep your heel flat, don't let the knee cave inward. This builds the single-leg stability you need mid-stride." },
+              { name: "Loaded calf raise", cue: "Full range — all the way down to a deep stretch, all the way up to your toes. Use a 3-second eccentric (lowering phase). The slow lowering is what builds Achilles tendon stiffness for better elastic energy return." }
+            ]
+          },
           exercises: [
             { name: "Back squat", scheme: "5×4 @ 88–92% 1RM" },
             { name: "Romanian deadlift", scheme: "4×5 @ 80% 1RM" },
@@ -460,6 +527,33 @@ const PROGRAM = {
         },
         {
           id: "B", type: "plyo", label: "Plyometric", name: "Day B — Explosive", when: "Wednesday evening",
+          warmup: {
+            duration: "6–8 min",
+            steps: [
+              { icon: "🚶", label: "Easy walk or light jog", detail: "3 min — you've already run this morning, so this is just enough to loosen up, not re-warm up fully." },
+              { icon: "💆", label: "Calf & Achilles massage gun", detail: "60–90 sec each leg — run the massage gun slowly up the calf and around the Achilles insertion. These tendons are taking the most load in this session." },
+              { icon: "🦶", label: "Ankle circles", detail: "10 each direction per foot — sit down, draw big circles with your foot. Lubricates the ankle joint before rapid impact loading." },
+              { icon: "🦵", label: "Leg swing (front/back)", detail: "10 each leg — loosens the hip flexors and hamstrings for bounding movements." },
+              { icon: "⬆️", label: "Two-foot easy hops", detail: "2 × 10 reps — soft, low hops on both feet. Start slow and easy. This is your Achilles check — if anything feels sharp, stop and do the session with reduced volume." }
+            ]
+          },
+          guide: {
+            benefit: "Plyometric training teaches your tendons to store and release elastic energy, reducing the muscular effort needed per stride. The study found plyometrics improve running economy most at easier paces — exactly your long run and base-building speeds. This session comes after a morning workout run, so keep intensity focused but volume conservative.",
+            checklist: [
+              "This session follows a morning run — your legs won't be fresh. That's fine, but don't push through sharp pain or joint discomfort.",
+              "Quality over quantity on every rep. A sloppy depth jump defeats the purpose. If you're too fatigued for explosive intent, cut volume by one set per exercise.",
+              "Ground contact time is the metric — land and leave the ground as fast as possible. You're not jumping high, you're training reactivity.",
+              "No heavy shoes. Use your running shoes or flat trainers — you want to feel the ground.",
+              "Short warm-up: 5 min jog, then 2 sets of easy two-foot hops to prime the ankles before your first depth jump."
+            ],
+            exercises: [
+              { name: "Depth jump", cue: "Step off the box (don't jump off), land on both feet simultaneously, and immediately explode upward. The goal is minimal time between landing and takeoff. Start at 60cm — if you can't react instantly, the box is too high." },
+              { name: "Alternate leg bound", cue: "Like an exaggerated running stride. Drive off one leg explosively, cover as much horizontal distance as possible per stride. Swing your arms aggressively. Land softly on the opposite foot and immediately drive again." },
+              { name: "Single-leg hurdle hop", cue: "One leg only — hop over each hurdle as fast as possible, focusing on a stiff ankle and quick ground contact. This directly mimics the single-leg demand of every running stride." },
+              { name: "Box jump", cue: "Quick quarter-squat wind-up, arms swing back then forward as you explode up. Land softly with hips and knees absorbing the impact. Step down — never jump down. Use the highest box you can land on cleanly." },
+              { name: "Ankle stiffness drill", cue: "Fast, low-amplitude bounce on your forefoot with nearly straight knees. Think of your ankles as springs, not your calves as pumps. Ground contact should be barely audible. Keep going for 15 fast reps without rhythm breaks." }
+            ]
+          },
           exercises: [
             { name: "Depth jump", scheme: "4×5 @ 60cm box" },
             { name: "Alternate leg bound", scheme: "4×6 each leg" },
@@ -470,6 +564,33 @@ const PROGRAM = {
         },
         {
           id: "C", type: "heavy", label: "Heavy lift", name: "Day C — Posterior chain", when: "Thursday evening",
+          warmup: {
+            duration: "8–10 min",
+            steps: [
+              { icon: "🚴", label: "Bike or row", detail: "5 min easy — gets the posterior chain blood flow going after two demanding days." },
+              { icon: "💆", label: "Glute & hamstring massage gun", detail: "60 sec each side — focus on the glute-hamstring junction and the upper hamstring near the sit bone. These are the primary movers in deadlifts." },
+              { icon: "🦋", label: "Hip 90/90 stretch", detail: "45 sec each side — sit on the floor, both legs bent at 90 degrees, front and back. Rotate your torso over the front hip. Opens the hip capsule before heavy hinging." },
+              { icon: "🔄", label: "Glute bridge (bodyweight)", detail: "2 × 10 — slow and deliberate. Drive through your heels, squeeze hard at the top for 2 seconds. This activates the glutes before the session so they fire immediately under load." },
+              { icon: "🏋️", label: "Deadlift warm-up sets", detail: "2–3 sets building to working weight: e.g. 40% × 5, 65% × 3, 82% × 2. At 90–93% working weight, thorough warm-up sets are non-negotiable." }
+            ]
+          },
+          guide: {
+            benefit: "The deadlift and its accessory work target the glutes and hamstrings — the primary engines of forward propulsion in running. Strong hamstrings also protect your knees during the high mileage ahead. The Nordic hamstring curl in particular has strong evidence for reducing hamstring injury risk, which is critical as your long runs build.",
+            checklist: [
+              "This is your second heavy day this week. If your legs feel genuinely beat up from Tuesday and Wednesday, reduce deadlift sets to 3×3 — better to be consistent than to push through poor recovery.",
+              "Deadlift setup is everything at 90%+. Take your time before each rep: mid-foot under bar, grip just outside legs, chest tall, big breath, then pull.",
+              "The bar should stay in contact with your shins the entire lift. If it swings forward, reset.",
+              "Bulgarian split squats at this intensity can be humbling — use a weight that lets you hit depth on every rep without the front knee caving.",
+              "Save the Nordic hamstring curl for last — it's the highest injury-risk exercise when done fatigued. If your hamstrings are cramping, skip it and add it next week."
+            ],
+            exercises: [
+              { name: "Deadlift", cue: "Push the floor away rather than pulling the bar up. Keep your shoulder blades pulled down and back throughout. At 90–93% for 3 reps, every rep should feel maximal but technically identical. Re-set your brace between each rep — don't touch-and-go at these loads." },
+              { name: "Bulgarian split squat", cue: "Rear foot elevated on bench, front foot far enough forward that your shin stays vertical at the bottom. Descend straight down, don't let your torso pitch too far forward. The front glute should do the work — if you feel it mostly in your quad, step your front foot further out." },
+              { name: "Barbell step-up", cue: "Drive through the heel of the stepping leg only — don't push off your back foot. Stand fully upright at the top before stepping down. Slow and controlled. This builds the single-leg hip extension strength that directly transfers to your push-off phase." },
+              { name: "Nordic hamstring curl", cue: "Anchor your ankles, start fully upright, then lower your body toward the floor as slowly as possible using your hamstrings as a brake. Catch yourself with your hands at the bottom, push back up, and use your hamstrings to pull yourself back to upright. Brutally hard but extremely effective." },
+              { name: "Standing calf raise", cue: "Use the calf raise machine or a step with a barbell. Full range — deep stretch at the bottom, all the way up on your toes. 3-second lowering phase. Your Achilles adapts to load over weeks, not sessions — be consistent here." }
+            ]
+          },
           exercises: [
             { name: "Deadlift", scheme: "5×3 @ 90–93% 1RM" },
             { name: "Bulgarian split squat", scheme: "4×5 each leg" },
@@ -486,6 +607,33 @@ const PROGRAM = {
       days: [
         {
           id: "A", type: "combo", label: "Combined", name: "Day A — Complex lower", when: "Tuesday evening",
+          warmup: {
+            duration: "10 min",
+            steps: [
+              { icon: "🚴", label: "Bike or row", detail: "5 min — complex training is your most neurologically demanding session. A thorough warm-up is more important here than any other day." },
+              { icon: "🦵", label: "Leg swing (front/back + lateral)", detail: "10 each direction, each leg — prime the hip through its full range before heavy squatting and jumping." },
+              { icon: "🔄", label: "Hip circle + glute activation", detail: "10 circles each way, then 10 bodyweight glute bridges — you need the glutes firing immediately for the hip thrust complex." },
+              { icon: "⬆️", label: "Progressive jump warm-up", detail: "5 easy two-foot hops → 5 medium box jumps → 3 near-max box jumps. You're priming the stretch-shortening cycle before the complex pairs demand maximum output from it." },
+              { icon: "🏋️", label: "Squat & deadlift warm-up sets", detail: "One warm-up set each at ~60%: 3 squats, 2 deadlifts. Enough to feel the movement, not enough to fatigue. Your working sets start heavy." }
+            ]
+          },
+          guide: {
+            benefit: "Complex training — pairing a heavy lift immediately with an explosive movement — produced the largest running economy improvements in the study. The heavy lift fires up your nervous system, and the explosive movement that follows capitalises on that state to produce more power than you could cold. Over weeks, your legs learn to be more explosive at every stride.",
+            checklist: [
+              "The timing of the complex pair is critical: finish the lift, re-rack, and reach the explosive movement within 10–20 seconds. Have your box or landing zone set up before you start each set.",
+              "Rest 3–4 full minutes between complex sets — not between the lift and the jump, but between each complete pair.",
+              "The jump or bound is the point of the complex — don't let it become sloppy just because something heavy came before it. If the explosive movement quality drops, the weight is too heavy.",
+              "Use the same working weights as late Phase 1. You're not trying to set new maxes — you're training the nervous system transfer between strength and power.",
+              "This is your longest session of the week. Budget 75–90 minutes including warm-up."
+            ],
+            exercises: [
+              { name: "Back squat → depth jump", cue: "Complete 3 heavy squat reps, re-rack immediately, walk to the box and perform 4 depth jumps within 20 seconds. The jump should feel explosive — if your legs are completely dead, rest 10 more seconds before the jumps but log it. Rest 3–4 min before the next complex set." },
+              { name: "Deadlift → broad jump", cue: "Pull 2 maximal deadlift reps, stand up, step back from the bar and immediately perform 4 maximal broad jumps. Land with both feet, reset, and jump again. The horizontal direction is intentional — it matches the force vector of running better than vertical jumps." },
+              { name: "Hip thrust → scissor jump", cue: "Complete your hip thrust reps, stand up from the bench, and immediately perform scissor jumps — alternating split squat jumps driving your knee high on each rep. These train the explosive hip extension that powers your push-off mid-stride." },
+              { name: "Bulgarian squat", cue: "No complex pair here — straight sets at 85%. Focus on single-leg stability and full depth. This is the accessory work that ensures both legs are developing evenly." },
+              { name: "Ankle bounce drill", cue: "Finish the session with ankle bounces to reinforce tendon stiffness after the heavy work. Fast, reactive, minimal ground contact. Think of it as a cooldown that's still doing useful training." }
+            ]
+          },
           exercises: [
             { name: "Back squat → depth jump", scheme: "4×(3+4) @ 90% / 60cm" },
             { name: "Deadlift → broad jump", scheme: "4×(2+4) @ 93%+ / max" },
@@ -496,6 +644,33 @@ const PROGRAM = {
         },
         {
           id: "B", type: "plyo", label: "Plyometric", name: "Day B — Speed-strength", when: "Wednesday evening",
+          warmup: {
+            duration: "6–8 min",
+            steps: [
+              { icon: "🚶", label: "Easy jog", detail: "3 min — light enough to not add fatigue on top of the morning run." },
+              { icon: "💆", label: "Calf, Achilles & shin massage gun", detail: "60 sec each leg — single-leg depth jumps are high-impact. The shin and Achilles need to be loose and pain-free before you start." },
+              { icon: "🦶", label: "Ankle circle + toe spread", detail: "10 circles each direction per foot, then splay your toes wide and hold 5 sec. Activates the intrinsic foot muscles that contribute to ground contact stiffness." },
+              { icon: "⬆️", label: "Single-leg hop warm-up", detail: "10 easy hops each foot in place — check that each ankle feels stable and responsive. If one side feels off, spend an extra 30 sec massaging that calf before continuing." },
+              { icon: "🏃", label: "Skipping drill", detail: "2 × 20m — exaggerated skip with high knee drive and forefoot landing. Warms up the hip flexors and gets your foot contact pattern right before the drills." }
+            ]
+          },
+          guide: {
+            benefit: "Phase 2 plyometrics shift from building basic tendon stiffness to training single-leg explosive power at higher intensities. Single-leg depth jumps directly replicate the loading your leg experiences at ground contact during running. Improving this quality reduces your ground contact time per stride — one of the clearest markers of better running economy.",
+            checklist: [
+              "Again, this follows a morning workout run. Check in honestly: if your Wednesday run had a hard interval session, drop the last exercise and call it a 4-exercise day.",
+              "Single-leg work at this intensity demands good ankle and knee stability. If you feel any sharp joint pain (not muscle fatigue), stop that exercise.",
+              "Land every single-leg rep on a stable ankle — no wobble, no rolling inward. Control matters more than volume.",
+              "The high-knee sprint drill is not a jog — it's a fast, exaggerated drill focusing on knee drive and quick foot contact. 20 meters, then walk back, repeat.",
+              "These sessions should take 45–55 minutes. If you're going longer, your rest periods are too long."
+            ],
+            exercises: [
+              { name: "Single-leg depth jump", cue: "Step off the box onto one foot, absorb briefly, then explode straight up off that same leg. Land on two feet. The eccentric load on one leg is significantly higher than a two-leg version — start at 40cm and only go higher if your landing is completely stable." },
+              { name: "Horizontal bound", cue: "Drive off one foot, cover maximum horizontal distance, land on the opposite foot, immediately bound again. Like running in slow motion with maximum effort per stride. This is the most running-specific plyometric in the program." },
+              { name: "Hurdle hops (5 hurdles)", cue: "Set up 5 hurdles in a row and hop over them continuously with both feet, focusing on fast ground contact between each. Don't pause between hurdles. The continuous nature trains your legs to maintain stiffness under repeated impacts — exactly what a marathon demands." },
+              { name: "Split squat jump", cue: "Start in a split squat position, jump and switch legs in the air, land in the opposite split squat. Land softly, immediately explode again. Focus on height and a stable landing — not just switching fast." },
+              { name: "High-knee sprint drill", cue: "Drive your knees up to hip height on each stride, land on your forefoot, and move forward at close to sprint speed. Arms drive aggressively opposite to legs. The goal is to reinforce fast cadence and high knee lift — two mechanics that deteriorate as marathon fatigue sets in." }
+            ]
+          },
           exercises: [
             { name: "Single-leg depth jump", scheme: "4×4 each @ 40cm" },
             { name: "Horizontal bound", scheme: "4×6 maximal distance" },
@@ -506,6 +681,33 @@ const PROGRAM = {
         },
         {
           id: "C", type: "combo", label: "Combined", name: "Day C — Complex posterior", when: "Thursday evening",
+          warmup: {
+            duration: "8–10 min",
+            steps: [
+              { icon: "🚴", label: "Bike or row", detail: "5 min — second complex day of the week. Your legs have done a lot. A proper warm-up here is as much about checking in with your body as it is about raising temperature." },
+              { icon: "💆", label: "Hamstring & glute massage gun", detail: "60 sec each side — focus on the upper hamstring and the glute-hamstring tie-in. These are the primary movers in deadlifts and step-ups." },
+              { icon: "🦵", label: "Leg swing (front/back)", detail: "10 each leg — loosens the hamstrings and hip flexors before trap bar pulls and step-ups." },
+              { icon: "🧘", label: "Adductor rock (kneeling)", detail: "10 each side — kneel on one knee, shift your weight toward that knee laterally until you feel a groin stretch. Releases the inner thigh before split squat variations." },
+              { icon: "🏋️", label: "Trap bar + front squat warm-up", detail: "1 light set each: trap bar deadlift at 50% × 3, front squat at 50% × 3. Feel the front squat rack position — elbows high before the working sets." }
+            ]
+          },
+          guide: {
+            benefit: "The second complex session of the week targets your posterior chain — the glutes, hamstrings, and calves that are doing the majority of the propulsive work in every marathon stride. Pairing the trap bar deadlift with a box jump is one of the most effective power-transfer complexes for runners because the trap bar allows a more upright torso, matching the force angle of running better than a conventional pull.",
+            checklist: [
+              "Two heavy days in one week means recovery is critical. If you didn't sleep well or nutrition has been poor, drop one complex pair and do straight sets instead.",
+              "Set up all your equipment before you start — box, bar loaded, landing zone clear. The transition speed between lift and explosive movement is where the training effect lives.",
+              "The lunge jump in the step-up complex is high-impact. Land with control — don't sacrifice your knees for speed.",
+              "Nordic hamstring curls near the end of a heavy session are hard. It's okay if you can only lower for 3–4 seconds by this point in the program — consistency matters more than perfect reps.",
+              "This is the last hard session before Saturday's long run. Finish by 8pm if possible and prioritize sleep and protein intake tonight."
+            ],
+            exercises: [
+              { name: "Front squat → jump squat", cue: "Front squat demands an upright torso and significant quad strength. Bar rests on your front delts, elbows high. After your reps, immediately perform jump squats — quarter squat and explode upward, landing softly. The jump squat is the direct power transfer from the quad strength built in the front squat." },
+              { name: "Trap bar DL → box jump", cue: "Stand inside the trap bar, handles at your sides. Push the floor away — more leg drive than a conventional deadlift. Re-rack, step to the box immediately, and perform maximal height box jumps. The trap bar deadlift and box jump share a nearly identical force curve, making this the most direct power transfer complex in the program." },
+              { name: "Step-up → lunge jump", cue: "Complete your step-up reps on each leg, then immediately perform lunge jumps — alternating split squat jumps with explosive knee drive. The step-up builds the concentric strength, the lunge jump trains how fast you can express it." },
+              { name: "Nordic hamstring curl", cue: "By this point in Phase 2 you may have added a small weight vest or hold a plate to your chest. Lower as slowly as you can control. The eccentric phase is the training stimulus — the slower the lower, the more effective. Catch with your hands at the bottom every time." },
+              { name: "Single-leg calf press", cue: "On the leg press machine, one foot at the base of the platform. Full range of motion — deep stretch, full plantarflexion at the top. Single-leg version increases the load per leg and better replicates the calf demand of running." }
+            ]
+          },
           exercises: [
             { name: "Front squat → jump squat", scheme: "4×(3+4) @ 85% / BW" },
             { name: "Trap bar DL → box jump", scheme: "4×(3+3) @ 90% / max" },
@@ -522,6 +724,31 @@ const PROGRAM = {
       days: [
         {
           id: "A", type: "combo", label: "Combined", name: "Day A — Complex (reduced vol)", when: "Tuesday evening",
+          warmup: {
+            duration: "8 min",
+            steps: [
+              { icon: "🚴", label: "Bike or row", detail: "4 min easy — Phase 3 sessions are shorter but intensity stays high. Don't cut the warm-up just because volume is lower." },
+              { icon: "🦵", label: "Leg swing (front/back + lateral)", detail: "10 each direction, each leg — same as Phase 2." },
+              { icon: "⬆️", label: "Progressive jump warm-up", detail: "5 easy hops → 3 medium box jumps → 2 near-max jumps. The same pre-complex activation routine that's been working for 9 weeks." },
+              { icon: "🏋️", label: "One warm-up set each", detail: "Squat at 65% × 2, deadlift at 65% × 1. Just enough to feel the load before your working sets." }
+            ]
+          },
+          guide: {
+            benefit: "You're now approaching peak mileage. The goal of this session is not to build new fitness — it's to preserve every adaptation you've built over 9 weeks. Volume drops by ~30% but intensity stays identical. Your nervous system retains the strength and power qualities as long as the load stays high and the explosive intent stays sharp.",
+            checklist: [
+              "Resist the urge to add sets. More is not better here. The reduced volume is intentional and backed by the research — maintenance requires far less stimulus than building.",
+              "Keep complex pair transition times sharp — same 10–20 second window as Phase 2. Don't let the reduced volume make you sloppy about execution.",
+              "If your long runs are going well and your legs feel good, this is the version of the session to do. If you're carrying significant fatigue, drop to Day A as straight sets only — no complex pairs.",
+              "This session should take 50–60 minutes. If it's taking longer, your rest periods have crept up.",
+              "Log your weights carefully this phase — you want to confirm you're maintaining Phase 2 loads, not quietly reducing them."
+            ],
+            exercises: [
+              { name: "Back squat → depth jump", cue: "Same weight as your Phase 2 working sets, one fewer set. The depth jump should feel sharp — if it doesn't, you needed this deload more than you thought. Focus on the quality of each rep rather than pushing new loads." },
+              { name: "Deadlift → broad jump", cue: "Two reps at 93%+, then 3 maximal broad jumps. At this point in training your nervous system is well-adapted to this pairing — the transition should feel almost automatic. Trust the process and don't add reps." },
+              { name: "Hip thrust", cue: "Straight sets, no complex pair. Four heavy reps — full glute contraction at the top, 1-second hold. This maintains the hip extension strength that's powering your long run push-off." },
+              { name: "Ankle bounce drill", cue: "Two sets to maintain Achilles stiffness adaptations. These take 90 seconds total and are worth keeping in even on the tightest days." }
+            ]
+          },
           exercises: [
             { name: "Back squat → depth jump", scheme: "3×(3+3) @ 90%+ / 60cm" },
             { name: "Deadlift → broad jump", scheme: "3×(2+3) @ 93%+ / max" },
@@ -531,6 +758,30 @@ const PROGRAM = {
         },
         {
           id: "B", type: "plyo", label: "Plyometric", name: "Day B — Reactive speed", when: "Wednesday evening",
+          warmup: {
+            duration: "5–6 min",
+            steps: [
+              { icon: "🚶", label: "Easy jog", detail: "2–3 min — the lightest warm-up of the program. You're deep into peak mileage; don't add unnecessary load." },
+              { icon: "💆", label: "Calf & Achilles massage gun", detail: "45 sec each leg — quick check-in on tendon health. Any lingering soreness from the week's running should be noted before you load the Achilles with depth jumps." },
+              { icon: "🦶", label: "Ankle circles + easy hops", detail: "8 circles each foot, then 8 easy two-foot hops. Simple and quick — your body knows these movements well by now." }
+            ]
+          },
+          guide: {
+            benefit: "A shorter, sharper plyometric session designed to maintain tendon stiffness and reactive speed without adding fatigue on top of peak mileage weeks. The exercises are the same as Phase 2 but with one fewer set each. At this stage of your base build, keeping these qualities alive is the priority — they will directly translate to better form and efficiency in your race-specific block.",
+            checklist: [
+              "This is the session most likely to be cut when marathon training load peaks. That's fine — running quality always takes priority. But try to keep at least two exercises if you do shorten it.",
+              "Your Wednesday morning workout run is probably getting harder as you approach peak mileage. Be honest about how your legs feel before starting plyometrics.",
+              "Three sets per exercise maximum. Do not add sets even if you feel good — save it for the long run.",
+              "Focus on quality of ground contact. At this point in training, you should be noticeably better at reacting off the ground than you were in Phase 1. Notice it.",
+              "Finish with the high-knee drill — it's a great way to reinforce running mechanics at the end of a session and only takes a few minutes."
+            ],
+            exercises: [
+              { name: "Single-leg depth jump", cue: "Three sets at the same 40cm height. Your landing stability should be significantly better than Phase 1 by now. If you feel any Achilles soreness that wasn't there before, drop to two-leg depth jumps this week." },
+              { name: "Hurdle hops (5)", cue: "Continuous hops over 5 hurdles, both feet. Fast ground contact between each. Three sets. This maintains the repeated-impact resilience your legs will need in the final miles of a marathon." },
+              { name: "Alternate leg bound", cue: "Maximal horizontal distance per stride. Three sets of 5 each leg. By now your bounding distance should be measurably further than it was in Phase 1 — that's a direct indicator of improved running power." },
+              { name: "High-knee drill", cue: "20 meters, three reps. Fast cadence, high knees, forefoot contact. Think of it as neuromuscular priming for your next morning run. End every session with this." }
+            ]
+          },
           exercises: [
             { name: "Single-leg depth jump", scheme: "3×4 each @ 40cm" },
             { name: "Hurdle hops (5)", scheme: "3×5 continuous" },
@@ -540,6 +791,32 @@ const PROGRAM = {
         },
         {
           id: "C", type: "heavy", label: "Heavy lift", name: "Day C — Strength maintenance", when: "Thursday evening",
+          warmup: {
+            duration: "7–8 min",
+            steps: [
+              { icon: "🚴", label: "Bike or row", detail: "4 min easy — you want to be warm but not pre-fatigued before heavy squats and deadlifts." },
+              { icon: "💆", label: "Quad & hip flexor massage gun", detail: "45 sec each side — after three days of running and lifting, these are likely tight. Release them before asking them to work under load." },
+              { icon: "🧘", label: "Deep squat hold", detail: "30 seconds — your pre-session mobility check. If something feels restricted, add an extra 30 sec hip circle each side." },
+              { icon: "🏋️", label: "Warm-up sets", detail: "Squat: 55% × 3, 75% × 2. Deadlift: 55% × 3. This is enough. Your body has been doing these movements for 12 weeks — it doesn't need much to be ready." }
+            ]
+          },
+          guide: {
+            benefit: "Short, heavy, and done. Three exercises, three sets, high loads. The research is clear that you need very little volume to maintain strength adaptations — but you need to keep the intensity high. This session takes 35–45 minutes and should feel almost easy volume-wise, even though the weights are still heavy. That contrast is the point: you're recovered enough to run well on Saturday.",
+            checklist: [
+              "This is the lightest volume session of the entire 12 weeks. Three sets per exercise. Do not add anything.",
+              "Loads stay at Phase 2 levels — 90%+ on the squat, 85% on the RDL. If you can't hit those loads, something in your recovery is off and worth addressing.",
+              "Finish by 7pm if possible. You want maximum recovery time before Saturday's long run.",
+              "After this session: eat well, hydrate, sleep 8+ hours. This is the most impactful recovery window of your entire week.",
+              "If you're in week 12 specifically and your long run this week is your longest of the base block, consider dropping this to just squat and RDL — two movements, done in 25 minutes."
+            ],
+            exercises: [
+              { name: "Back squat", cue: "Three sets of three at 90%+. These should feel heavy but not maximal — you've been doing this for 12 weeks. Impeccable form, full depth, complete rest between sets. This is maintenance, not testing." },
+              { name: "Romanian deadlift", cue: "Four reps at 85%. Focus on the hamstring stretch at the bottom — slow eccentric, feel the load in your posterior chain. This is the movement most directly keeping your running propulsion muscles strong." },
+              { name: "Bulgarian split squat", cue: "Two sets of four each leg. The reduced volume means you can focus entirely on perfect single-leg mechanics. This is the exercise that has done the most to build your single-leg stability over the past 12 weeks." },
+              { name: "Nordic hamstring curl", cue: "Two sets. Lower as slowly as you can. At this point in the program, this is pure injury prevention maintenance — the hamstrings are a high-risk area in marathon training and this keeps them resilient." },
+              { name: "Calf raise", cue: "Three sets, slow eccentric, full range. This takes 4 minutes and maintains every Achilles adaptation you've built. Don't skip it just because the session is short." }
+            ]
+          },
           exercises: [
             { name: "Back squat", scheme: "3×3 @ 90%+ 1RM" },
             { name: "Romanian deadlift", scheme: "3×4 @ 85% 1RM" },
@@ -627,6 +904,46 @@ function renderToday() {
         <div class="expand-icon ${isOpen ? 'open' : ''}">⌄</div>
       </div>
       <div class="exercise-rows" style="display:${isOpen ? 'block' : 'none'}" id="rows-${day.id}">
+
+        <!-- WARMUP PANEL -->
+        <div class="guide-toggle" onclick="togglePanel('warmup-${day.id}', this)">
+          <div class="guide-toggle-label">🔥 Warm-up · ${day.warmup.duration}</div>
+          <div class="guide-chevron" id="warmup-chev-${day.id}">⌄</div>
+        </div>
+        <div class="guide-panel" id="warmup-${day.id}">
+          <div class="guide-section-title">Pre-session routine</div>
+          <ul class="guide-checklist">
+            ${day.warmup.steps.map(s => `
+              <li>
+                <span class="guide-check">${s.icon}</span>
+                <span><strong>${s.label}</strong> — ${s.detail}</span>
+              </li>`).join('')}
+          </ul>
+        </div>
+
+        <!-- GUIDE PANEL -->
+        <div class="guide-toggle" onclick="togglePanel('guide-${day.id}', this)">
+          <div class="guide-toggle-label">📋 Workout guide & cues</div>
+          <div class="guide-chevron" id="guide-chev-${day.id}">⌄</div>
+        </div>
+        <div class="guide-panel" id="guide-${day.id}">
+          <div class="guide-benefit">${day.guide.benefit}</div>
+          <div class="guide-section-title">Before you start</div>
+          <ul class="guide-checklist">
+            ${day.guide.checklist.map(c => `
+              <li><span class="guide-check">✓</span><span>${c}</span></li>`).join('')}
+          </ul>
+          <div class="guide-section-title">Exercise cues</div>
+          <ul class="guide-ex-list">
+            ${day.guide.exercises.map(e => `
+              <li class="guide-ex-item">
+                <div class="guide-ex-name">${e.name}</div>
+                <div class="guide-ex-cue">${e.cue}</div>
+              </li>`).join('')}
+          </ul>
+        </div>
+
+        <!-- EXERCISES -->
         ${day.exercises.map(ex => {
           const exLog = logged[ex.name];
           const setsDone = exLog ? exLog.sets.length : 0;
@@ -642,6 +959,15 @@ function renderToday() {
       </div>`;
     list.appendChild(card);
   });
+}
+
+function togglePanel(panelId, toggleEl) {
+  const panel = document.getElementById(panelId);
+  const chev = toggleEl.querySelector('.guide-chevron');
+  if (!panel) return;
+  const isOpen = panel.style.display === 'block';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (chev) chev.classList.toggle('open', !isOpen);
 }
 
 function toggleDay(dayId, headerEl) {
