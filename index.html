@@ -136,7 +136,46 @@
   .expand-icon { color: var(--muted); font-size: 20px; transition: transform 0.2s; }
   .expand-icon.open { transform: rotate(180deg); }
 
-  /* ── WORKOUT GUIDE ── */
+  /* ── RUNS ── */
+  .log-run-btn {
+    display: block; width: calc(100% - 32px); margin: 0 16px 12px;
+    padding: 14px; background: var(--accent); color: #000;
+    border: none; border-radius: var(--radius);
+    font-family: var(--sans); font-size: 15px; font-weight: 500; cursor: pointer;
+  }
+  .run-entry {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius); margin: 0 16px 10px; padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .run-entry-left {}
+  .run-entry-date { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 4px; }
+  .run-entry-type { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+  .run-entry-detail { font-size: 12px; color: var(--muted); }
+  .run-entry-right { text-align: right; }
+  .run-entry-dist { font-size: 22px; font-family: var(--mono); font-weight: 500; color: var(--accent); }
+  .run-entry-unit { font-size: 11px; color: var(--muted); }
+  .run-type-picker { display: flex; gap: 8px; margin-bottom: 16px; }
+  .run-type-btn {
+    flex: 1; padding: 9px 4px; border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border2); background: none;
+    color: var(--muted); font-family: var(--sans); font-size: 13px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .run-type-btn.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(200,240,58,0.3); font-weight: 500; }
+  .run-field-label { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .run-type-badge {
+    font-size: 10px; font-family: var(--mono); padding: 2px 8px;
+    border-radius: 20px; display: inline-block; margin-bottom: 4px;
+  }
+  .run-type-badge.Easy { background: var(--blue-dim); color: var(--blue); }
+  .run-type-badge.Workout { background: var(--amber-dim); color: var(--amber); }
+  .run-type-badge.Long { background: rgba(168,85,247,0.12); color: #a855f7; }
+
+  .delete-run-btn {
+    background: none; border: none; color: var(--muted2);
+    font-size: 18px; cursor: pointer; padding: 4px 8px;
+  }
   .guide-toggle {
     padding: 11px 16px; border-bottom: 0.5px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
@@ -357,7 +396,10 @@
   .pr-val { font-family: var(--mono); color: var(--accent); }
   .pr-date { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-  .scroll-area { flex: 1; overflow-y: auto; padding-top: 8px; }
+  .run-entry-notes {
+    font-size: 11px; color: var(--muted); margin-top: 4px;
+    font-style: italic; line-height: 1.4;
+  }
 
   input[type=number] { -moz-appearance: textfield; }
   input[type=number]::-webkit-inner-spin-button,
@@ -420,6 +462,68 @@
   </div>
 </div>
 
+<!-- RUNS SCREEN -->
+<div class="screen" id="screen-runs">
+  <div class="header">
+    <div class="header-top"><h1>Runs</h1></div>
+    <div class="sub">Log your training runs</div>
+  </div>
+  <div class="scroll-area">
+    <button class="log-run-btn" onclick="openRunModal()">+ Log a run</button>
+    <div id="run-list"></div>
+  </div>
+</div>
+
+<!-- RUN LOG MODAL -->
+<div class="modal-overlay" id="run-modal-overlay" onclick="closeRunModalIfOutside(event)">
+  <div class="modal" id="run-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Log run</div>
+      <div class="modal-sub" id="run-modal-date"></div>
+    </div>
+    <div class="modal-body">
+
+      <div class="run-field-label">Run type</div>
+      <div class="run-type-picker" id="run-type-picker">
+        <button class="run-type-btn active" onclick="selectRunType(this, 'Easy')">Easy</button>
+        <button class="run-type-btn" onclick="selectRunType(this, 'Workout')">Workout</button>
+        <button class="run-type-btn" onclick="selectRunType(this, 'Long run')">Long run</button>
+      </div>
+
+      <div class="run-fields">
+        <div class="run-field">
+          <div class="run-field-label">Distance (miles)</div>
+          <input class="set-input" id="run-distance" type="number" placeholder="6.2" inputmode="decimal" step="0.1" style="width:100%">
+        </div>
+        <div class="run-field" style="margin-top:12px">
+          <div class="run-field-label">Average pace (min/mile)</div>
+          <div style="display:flex;gap:8px">
+            <input class="set-input" id="run-pace-min" type="number" placeholder="mm" inputmode="numeric" style="flex:1">
+            <div style="display:flex;align-items:center;color:var(--muted);font-family:var(--mono)">:</div>
+            <input class="set-input" id="run-pace-sec" type="number" placeholder="ss" inputmode="numeric" min="0" max="59" style="flex:1">
+          </div>
+        </div>
+        <div class="run-field" style="margin-top:12px">
+          <div class="run-field-label">Effort (RPE 1–10)</div>
+          <input class="set-input" id="run-rpe" type="number" placeholder="7" inputmode="decimal" min="1" max="10" step="0.5" style="width:100%">
+        </div>
+        <div class="run-field" style="margin-top:12px">
+          <div class="run-field-label">Avg heart rate (bpm)</div>
+          <input class="set-input" id="run-hr" type="number" placeholder="148" inputmode="numeric" style="width:100%">
+        </div>
+        <div class="run-field" style="margin-top:12px">
+          <div class="run-field-label">Notes (optional)</div>
+          <textarea class="set-input run-notes" id="run-notes" placeholder="How did it feel? Any issues?" rows="2" style="width:100%;resize:none;font-family:var(--sans);font-size:14px;padding:10px"></textarea>
+        </div>
+      </div>
+
+      <button class="save-set-btn" onclick="saveRun()" style="margin-top:16px">Save run</button>
+      <button class="close-modal-btn" onclick="closeRunModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOG MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalIfOutside(event)">
   <div class="modal" id="modal">
@@ -464,6 +568,10 @@
   <button class="nav-btn active" onclick="showScreen('today', this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
     Today
+  </button>
+  <button class="nav-btn" onclick="showScreen('runs', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0M5 20l4-8 3 3 3-5 4 10"/></svg>
+    Runs
   </button>
   <button class="nav-btn" onclick="showScreen('history', this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
@@ -860,6 +968,7 @@ function showScreen(name, btn) {
   if (btn) btn.classList.add('active');
   if (name === 'history') renderHistory();
   if (name === 'progress') renderProgress();
+  if (name === 'runs') renderRuns();
 }
 
 // ── TODAY ──
@@ -1159,14 +1268,101 @@ function renderProgress() {
   }
 }
 
+// ── RUN DATA ──
+let runs = JSON.parse(localStorage.getItem('mruns') || '[]');
+let selectedRunType = 'Easy';
+
+function saveRunData() { localStorage.setItem('mruns', JSON.stringify(runs)); }
+
+function openRunModal() {
+  document.getElementById('run-modal-date').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  document.getElementById('run-distance').value = '';
+  document.getElementById('run-pace-min').value = '';
+  document.getElementById('run-pace-sec').value = '';
+  document.getElementById('run-rpe').value = '';
+  document.getElementById('run-hr').value = '';
+  document.getElementById('run-notes').value = '';
+  selectedRunType = 'Easy';
+  document.querySelectorAll('.run-type-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.run-type-btn')[0].classList.add('active');
+  document.getElementById('run-modal-overlay').classList.add('open');
+}
+
+function closeRunModal() {
+  document.getElementById('run-modal-overlay').classList.remove('open');
+}
+
+function closeRunModalIfOutside(e) {
+  if (e.target === document.getElementById('run-modal-overlay')) closeRunModal();
+}
+
+function selectRunType(btn, type) {
+  selectedRunType = type;
+  document.querySelectorAll('.run-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function saveRun() {
+  const dist = parseFloat(document.getElementById('run-distance').value);
+  const paceMin = document.getElementById('run-pace-min').value;
+  const paceSec = document.getElementById('run-pace-sec').value;
+  const rpe = document.getElementById('run-rpe').value;
+  const hr = document.getElementById('run-hr').value;
+  const notes = document.getElementById('run-notes').value.trim();
+  if (!dist) { closeRunModal(); return; }
+  const pace = (paceMin || paceSec) ? `${paceMin || '0'}:${(paceSec || '0').padStart(2,'0')}` : null;
+  runs.unshift({ id: Date.now(), type: selectedRunType, distance: dist, pace, rpe, hr: hr || null, notes: notes || null, date: new Date().toISOString() });
+  saveRunData();
+  closeRunModal();
+  renderRuns();
+}
+
+function deleteRun(id) {
+  runs = runs.filter(r => r.id !== id);
+  saveRunData();
+  renderRuns();
+}
+
+function renderRuns() {
+  const list = document.getElementById('run-list');
+  if (!list) return;
+  if (runs.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🏃</div>No runs logged yet.<br>Tap the button above to log your first run.</div>';
+    return;
+  }
+  list.innerHTML = runs.map(r => {
+    const dateStr = new Date(r.date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const badgeClass = r.type === 'Long run' ? 'Long' : r.type;
+    const chips = [
+      r.pace ? `⏱ ${r.pace}/mi` : null,
+      r.rpe  ? `RPE ${r.rpe}` : null,
+      r.hr   ? `♥ ${r.hr} bpm` : null,
+    ].filter(Boolean).join(' · ');
+    return `
+      <div class="run-entry">
+        <div class="run-entry-left">
+          <div class="run-entry-date">${dateStr}</div>
+          <div class="run-type-badge ${badgeClass}">${r.type}</div>
+          <div class="run-entry-detail">${chips}</div>
+          ${r.notes ? `<div class="run-entry-notes">${r.notes}</div>` : ''}
+        </div>
+        <div class="run-entry-right">
+          <div class="run-entry-dist">${r.distance}</div>
+          <div class="run-entry-unit">miles</div>
+          <button class="delete-run-btn" onclick="deleteRun(${r.id})">×</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
 // ── FEEDBACK ──
 async function getFeedback() {
   const btn = document.getElementById('feedback-btn');
   const output = document.getElementById('feedback-output');
 
   const entries = Object.entries(logs);
-  if (entries.length < 2) {
-    output.innerHTML = '<div class="feedback-result">Log at least 2 sessions before requesting feedback.</div>';
+  if (entries.length < 2 && runs.length < 2) {
+    output.innerHTML = '<div class="feedback-result">Log at least 2 lifting sessions or runs before requesting feedback.</div>';
     return;
   }
 
@@ -1186,20 +1382,27 @@ async function getFeedback() {
     return `Week ${weekPart}, ${day?.name || dayId}:\n${sessionLines}`;
   }).join('\n\n');
 
-  const prompt = `You are a strength and conditioning coach helping a marathon runner following a 12-week lifting program based on a peer-reviewed meta-analysis (PMC11052887) on strength training and running economy. The program uses high-load training (≥80% 1RM), plyometrics, and complex training to improve running economy.
+  const runSummary = runs.slice(0, 14).map(r => {
+    const dateStr = new Date(r.date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    return `${dateStr}: ${r.type} — ${r.distance}mi${r.pace ? ' @ ' + r.pace + '/mi' : ''}${r.rpe ? ', RPE ' + r.rpe : ''}${r.hr ? ', avg HR ' + r.hr + 'bpm' : ''}${r.notes ? ' [note: ' + r.notes + ']' : ''}`;
+  }).join('\n');
 
-Here are their recent logged sessions:
+  const prompt = `You are a strength and conditioning coach helping a marathon runner following a 12-week lifting program based on a peer-reviewed meta-analysis (PMC11052887) on strength training and running economy. The program uses high-load training (≥80% 1RM), plyometrics, and complex training 3 days per week (Tuesday, Wednesday, Thursday evenings), while the athlete runs 6 days per week including morning workout runs on Monday and Wednesday, easy runs Tuesday/Thursday/Friday, and a long run Saturday.
 
-${summary}
+LIFTING SESSIONS LOGGED:
+${summary || 'None yet.'}
+
+RUNS LOGGED (most recent first):
+${runSummary || 'None yet.'}
 
 Please give specific, practical feedback covering:
-1. Load progression — are weights moving in the right direction across weeks?
-2. RPE trends — are they working hard enough, or leaving too much on the table?
-3. Volume — does the number of sets look appropriate for their training phase?
-4. Any red flags or things to watch
-5. One specific recommendation for their next session
+1. Load progression — are lifting weights moving in the right direction?
+2. Run/lift interaction — are there patterns where hard runs seem to affect lifting RPE or vice versa? Any days where the combined load looks too high?
+3. Heart rate & effort trends — does HR relative to pace suggest improving aerobic fitness or accumulated fatigue? Flag any runs where HR seems high for the effort level logged.
+4. Any red flags (high RPE on easy runs, elevated HR on easy days, stalled lifting loads, back-to-back hard days)
+5. One specific recommendation for the next 7 days
 
-Keep it direct and practical. 3–5 sentences per section. No generic advice.`;
+Keep it direct and practical. 3–5 sentences per section. Reference specific dates or sessions where relevant. No generic advice.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
