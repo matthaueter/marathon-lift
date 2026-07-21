@@ -121,6 +121,16 @@ main{ max-width:640px; margin:0 auto; padding:0 14px; }
   color:var(--grey);
   margin:4px 0 0 0;
 }
+.evening-note{
+  background:rgba(62,142,130,0.14);
+  border-left:3px solid var(--teal);
+  border-radius:4px;
+  padding:10px 12px;
+  font-size:13px;
+  line-height:1.5;
+  color:var(--ink-soft);
+  margin:0 4px 14px 4px;
+}
 
 .card{
   background:#FBF9F0;
@@ -283,6 +293,7 @@ main{ max-width:640px; margin:0 auto; padding:0 14px; }
 
 .weather-main{ display:flex; align-items:baseline; gap:10px; }
 .weather-temp{ font-family:var(--font-display); font-size:34px; }
+.weather-lo{ font-size:19px; color:var(--grey); }
 .weather-desc{ font-size:14px; color:var(--ink-soft); }
 .weather-details{
   display:flex; gap:16px;
@@ -590,6 +601,23 @@ function daysUntilRace(dateISO){
   return Math.round((r - d) / 86400000);
 }
 
+function addDays(dateISO, n){
+  const d = parseISO(dateISO);
+  d.setDate(d.getDate() + n);
+  return toISO(d);
+}
+
+/* After 5pm local time, the app pivots to showing tomorrow's run/lift/weather
+   — useful since lifting happens in the evening and you're planning the next day. */
+function isEveningMode(){
+  return new Date().getHours() >= 17;
+}
+
+function getDisplayDate(){
+  const todayISO = toISO(new Date());
+  return isEveningMode() ? addDays(todayISO, 1) : todayISO;
+}
+
 /* =========================================================
    RENDER — PLAN TAB
    ========================================================= */
@@ -635,23 +663,31 @@ function fmtDateRange(startISO, endISO){
 function renderToday(){
   const el = document.getElementById('tab-today');
   const todayISO = toISO(new Date());
-  const week = findWeekForDate(todayISO);
+  const evening = isEveningMode();
+  const displayISO = evening ? addDays(todayISO, 1) : todayISO;
+  const week = findWeekForDate(displayISO);
   const dLeft = daysUntilRace(todayISO);
 
-  let html = '<div class="section-head"><h2>Today</h2>';
+  const heading = evening ? 'Tomorrow' : 'Today';
+
+  let html = `<div class="section-head"><h2>${heading}</h2>`;
   html += `<p class="sub">${dLeft >= 0 ? dLeft + ' days to race day' : 'Race complete \u2014 great work'}</p></div>`;
 
+  if(evening){
+    html += `<div class="evening-note">It's after 5pm \u2014 showing tomorrow's run, lift, and forecast so you can plan tonight.</div>`;
+  }
+
   if(!week){
-    html += '<div class="card"><p>Today falls outside the 15-week plan window.</p></div>';
+    html += '<div class="card"><p>That date falls outside the 15-week plan window.</p></div>';
     el.innerHTML = html;
     return;
   }
 
-  const dk = dayKeyForDate(todayISO);
+  const dk = dayKeyForDate(displayISO);
   const day = week.days[dk];
 
   html += `<div class="card today-run">
-    <div class="card-eyebrow">Week ${week.n} &middot; ${DAY_NAMES[dk]}</div>
+    <div class="card-eyebrow">Week ${week.n} &middot; ${DAY_NAMES[dk]}${evening ? ' (tomorrow)' : ''}</div>
     <div class="today-run-main">
       <span class="today-mi">${day.mi > 0 ? day.mi : '\u2014'}</span>
       <span class="today-run-label">${day.label}</span>
@@ -661,17 +697,17 @@ function renderToday(){
 
   // Weather card
   html += `<div class="card" id="weather-card">
-    <div class="card-eyebrow">Weather</div>
+    <div class="card-eyebrow">${evening ? "Tomorrow's Forecast" : 'Weather'}</div>
     <div id="weather-body"><p class="muted">Loading forecast&hellip;</p></div>
   </div>`;
 
   // Lift card
   const sched = LIFT_SCHEDULE[week.n];
-  const liftToday = sched.lifts.find(l => l.day === dk);
-  if(liftToday){
-    const session = SESSIONS[liftToday.s];
+  const liftDay = sched.lifts.find(l => l.day === dk);
+  if(liftDay){
+    const session = SESSIONS[liftDay.s];
     html += `<div class="card today-lift">
-      <div class="card-eyebrow">Tonight's Lift</div>
+      <div class="card-eyebrow">${evening ? "Tomorrow Night's Lift" : "Tonight's Lift"}</div>
       <div class="today-lift-name">${session.name}</div>
       <div class="today-lift-meta">${session.duration}</div>
       <p class="week-note">${sched.note}</p>
@@ -679,8 +715,8 @@ function renderToday(){
     </div>`;
   } else {
     html += `<div class="card today-lift no-lift">
-      <div class="card-eyebrow">Tonight's Lift</div>
-      <p class="muted">No lift scheduled today. Rest up.</p>
+      <div class="card-eyebrow">${evening ? "Tomorrow Night's Lift" : "Tonight's Lift"}</div>
+      <p class="muted">No lift scheduled${evening ? ' tomorrow' : ' today'}. Rest up.</p>
     </div>`;
   }
 
@@ -690,7 +726,7 @@ function renderToday(){
   const link = el.querySelector('[data-goto="strength"]');
   if(link) link.addEventListener('click', () => switchTab('strength'));
 
-  loadWeather();
+  loadWeather(evening);
 }
 
 const WEATHER_CODES = {
@@ -705,26 +741,46 @@ const WEATHER_CODES = {
   95:'Thunderstorm',96:'Thunderstorm w/ hail',99:'Thunderstorm w/ hail',
 };
 
-function loadWeather(){
+function loadWeather(showTomorrow){
   const body = document.getElementById('weather-body');
   const saved = localStorage.getItem('nycmp_location');
 
   function fetchFor(lat, lon, label){
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&temperature_unit=fahrenheit&wind_speed_unit=mph`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=2`;
     fetch(url).then(r => r.json()).then(data => {
-      const c = data.current;
-      const desc = WEATHER_CODES[c.weather_code] || 'Conditions unavailable';
-      body.innerHTML = `
-        <div class="weather-main">
-          <span class="weather-temp">${Math.round(c.temperature_2m)}&deg;F</span>
-          <span class="weather-desc">${desc}</span>
-        </div>
-        <div class="weather-details">
-          <span>Wind ${Math.round(c.wind_speed_10m)} mph</span>
-          <span>Humidity ${c.relative_humidity_2m}%</span>
-        </div>
-        <div class="weather-loc">${label} &middot; <button class="link-btn" id="change-loc">change location</button></div>
-      `;
+      if(showTomorrow){
+        const i = 1; // tomorrow in the daily arrays
+        const desc = WEATHER_CODES[data.daily.weather_code[i]] || 'Conditions unavailable';
+        const hi = Math.round(data.daily.temperature_2m_max[i]);
+        const lo = Math.round(data.daily.temperature_2m_min[i]);
+        const wind = Math.round(data.daily.wind_speed_10m_max[i]);
+        const precip = data.daily.precipitation_probability_max[i];
+        body.innerHTML = `
+          <div class="weather-main">
+            <span class="weather-temp">${hi}&deg;<span class="weather-lo">/${lo}&deg;F</span></span>
+            <span class="weather-desc">${desc}</span>
+          </div>
+          <div class="weather-details">
+            <span>Wind ${wind} mph</span>
+            <span>Rain chance ${precip}%</span>
+          </div>
+          <div class="weather-loc">${label} &middot; <button class="link-btn" id="change-loc">change location</button></div>
+        `;
+      } else {
+        const c = data.current;
+        const desc = WEATHER_CODES[c.weather_code] || 'Conditions unavailable';
+        body.innerHTML = `
+          <div class="weather-main">
+            <span class="weather-temp">${Math.round(c.temperature_2m)}&deg;F</span>
+            <span class="weather-desc">${desc}</span>
+          </div>
+          <div class="weather-details">
+            <span>Wind ${Math.round(c.wind_speed_10m)} mph</span>
+            <span>Humidity ${c.relative_humidity_2m}%</span>
+          </div>
+          <div class="weather-loc">${label} &middot; <button class="link-btn" id="change-loc">change location</button></div>
+        `;
+      }
       document.getElementById('change-loc').addEventListener('click', promptLocation);
     }).catch(() => {
       body.innerHTML = '<p class="muted">Couldn\'t load the forecast right now.</p>';
@@ -763,7 +819,7 @@ function promptLocation(){
         const r = data.results[0];
         const loc = { lat:r.latitude, lon:r.longitude, label:`${r.name}, ${r.admin1 || r.country}` };
         localStorage.setItem('nycmp_location', JSON.stringify(loc));
-        loadWeather();
+        loadWeather(isEveningMode());
       } else {
         alert('Couldn\'t find that location.');
       }
