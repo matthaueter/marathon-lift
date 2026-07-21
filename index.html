@@ -2,1431 +2,862 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Marathon Lift">
-<link rel="apple-touch-icon" href="icon.png">
-<title>Marathon Lift</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NYC 26.2 — Marathon Training</title>
+<meta name="theme-color" content="#1B2A2E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+/* =========================================================
+   TOKENS
+   ========================================================= */
+:root{
+  --ink: #1B2A2E;
+  --ink-soft: #2A3E43;
+  --parchment: #F1ECD9;
+  --parchment-dim: #E7E0C9;
+  --orange: #E4572E;
+  --teal: #3E8E82;
+  --grey: #6B6355;
+  --amber: #E8A33D;
+  --line: rgba(27,42,46,0.12);
+  --line-on-ink: rgba(241,236,217,0.16);
 
-  :root {
-    --bg: #0a0a0a;
-    --surface: #141414;
-    --surface2: #1e1e1e;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.14);
-    --text: #f0f0f0;
-    --muted: #666;
-    --muted2: #444;
-    --accent: #c8f03a;
-    --accent-dim: rgba(200,240,58,0.12);
-    --accent-dim2: rgba(200,240,58,0.22);
-    --blue: #4a9eff;
-    --blue-dim: rgba(74,158,255,0.12);
-    --red: #ff5a5a;
-    --amber: #ffb830;
-    --amber-dim: rgba(255,184,48,0.12);
-    --radius: 14px;
-    --radius-sm: 8px;
-    --mono: 'DM Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
-  }
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  background:var(--parchment);
+  color:var(--ink);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:76px; /* room for bottom tab bar */
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 15px;
-    min-height: 100vh;
-    overscroll-behavior: none;
-  }
+h1,h2,h3{ font-family:var(--font-display); text-transform:uppercase; letter-spacing:0.02em; margin:0; }
 
-  /* ── SCREENS ── */
-  .screen { display: none; flex-direction: column; min-height: 100vh; padding-bottom: 80px; }
-  .screen.active { display: flex; }
+/* =========================================================
+   HEADER
+   ========================================================= */
+.app-header{
+  background:var(--ink);
+  color:var(--parchment);
+  padding:18px 18px 0 18px;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+.header-inner{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+}
+.app-title{
+  font-family:var(--font-display);
+  font-size:22px;
+  letter-spacing:0.06em;
+  color:var(--parchment);
+}
+.app-title span{ color:var(--orange); }
+.race-countdown{
+  font-family:var(--font-mono);
+  font-size:13px;
+  color:var(--amber);
+}
+.elevation-strip{
+  display:block;
+  width:100%;
+  height:34px;
+  margin-top:10px;
+}
 
-  /* ── NAV ── */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--surface);
-    border-top: 0.5px solid var(--border2);
-    display: flex; z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .nav-btn {
-    flex: 1; display: flex; flex-direction: column; align-items: center;
-    padding: 10px 4px 8px; gap: 4px;
-    background: none; border: none; cursor: pointer;
-    color: var(--muted); font-family: var(--sans); font-size: 10px;
-    transition: color 0.15s;
-  }
-  .nav-btn.active { color: var(--accent); }
-  .nav-btn svg { width: 22px; height: 22px; }
+/* =========================================================
+   TAB BAR (bottom, mobile-app style)
+   ========================================================= */
+.tab-bar{
+  position:fixed;
+  bottom:0; left:0; right:0;
+  display:flex;
+  background:var(--ink);
+  border-top:1px solid var(--line-on-ink);
+  z-index:30;
+  padding-bottom:env(safe-area-inset-bottom, 0);
+}
+.tab-btn{
+  flex:1;
+  background:none;
+  border:none;
+  color:rgba(241,236,217,0.55);
+  font-family:var(--font-display);
+  font-size:12px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  padding:13px 4px 11px 4px;
+  cursor:pointer;
+  border-top:2px solid transparent;
+}
+.tab-btn.active{
+  color:var(--parchment);
+  border-top-color:var(--orange);
+}
 
-  /* ── HEADER ── */
-  .header {
-    padding: 56px 20px 16px;
-    background: var(--bg);
-    position: sticky; top: 0; z-index: 50;
-    border-bottom: 0.5px solid var(--border);
-  }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
-  .header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; }
-  .header .sub { font-size: 12px; color: var(--muted); font-family: var(--mono); }
-  .phase-badge {
-    font-size: 10px; font-family: var(--mono);
-    background: var(--accent-dim); color: var(--accent);
-    padding: 3px 8px; border-radius: 20px;
-    border: 0.5px solid rgba(200,240,58,0.3);
-  }
+/* =========================================================
+   LAYOUT / SECTIONS
+   ========================================================= */
+main{ max-width:640px; margin:0 auto; padding:0 14px; }
+.tab-panel{ display:none; }
+.tab-panel.active{ display:block; }
 
-  /* ── CARDS ── */
-  .card {
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin: 0 16px 10px;
-  }
-  .card-title {
-    font-size: 11px; font-family: var(--mono); color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
-  }
+.section-head{ padding:20px 4px 10px 4px; }
+.section-head h2{ font-size:24px; color:var(--ink); }
+.section-head .sub{
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:var(--grey);
+  margin:4px 0 0 0;
+}
 
-  /* ── TODAY SCREEN ── */
-  .day-selector {
-    display: flex; gap: 8px; padding: 14px 16px;
-    overflow-x: auto; scrollbar-width: none;
-  }
-  .day-selector::-webkit-scrollbar { display: none; }
-  .day-chip {
-    flex-shrink: 0; padding: 6px 14px;
-    border-radius: 20px; border: 0.5px solid var(--border2);
-    background: none; color: var(--muted); cursor: pointer;
-    font-family: var(--sans); font-size: 13px;
-    transition: all 0.15s;
-  }
-  .day-chip.active {
-    background: var(--accent); color: #000;
-    border-color: var(--accent); font-weight: 500;
-  }
+.card{
+  background:#FBF9F0;
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:16px;
+  margin-bottom:14px;
+}
+.card-eyebrow{
+  font-family:var(--font-mono);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:var(--grey);
+  margin-bottom:8px;
+}
+.muted{ color:var(--grey); }
 
-  .workout-card {
-    background: var(--surface); border: 0.5px solid var(--border);
-    border-radius: var(--radius); margin: 0 16px 10px; overflow: hidden;
-  }
-  .workout-header {
-    padding: 14px 16px; display: flex; align-items: center;
-    justify-content: space-between; cursor: pointer;
-  }
-  .workout-type {
-    font-size: 10px; font-family: var(--mono);
-    padding: 2px 8px; border-radius: 20px; margin-bottom: 4px;
-    display: inline-block;
-  }
-  .type-heavy { background: var(--blue-dim); color: var(--blue); }
-  .type-plyo { background: rgba(74,222,128,0.12); color: #4ade80; }
-  .type-combo { background: var(--amber-dim); color: var(--amber); }
-  .workout-name { font-size: 16px; font-weight: 500; }
-  .workout-when { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .expand-icon { color: var(--muted); font-size: 20px; transition: transform 0.2s; }
-  .expand-icon.open { transform: rotate(180deg); }
+.intro-card p{ margin:0; line-height:1.55; font-size:14.5px; }
 
-  /* ── RUNS ── */
-  .log-run-btn {
-    display: block; width: calc(100% - 32px); margin: 0 16px 12px;
-    padding: 14px; background: var(--accent); color: #000;
-    border: none; border-radius: var(--radius);
-    font-family: var(--sans); font-size: 15px; font-weight: 500; cursor: pointer;
-  }
-  .run-entry {
-    background: var(--surface); border: 0.5px solid var(--border);
-    border-radius: var(--radius); margin: 0 16px 10px; padding: 14px 16px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .run-entry-left {}
-  .run-entry-date { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 4px; }
-  .run-entry-type { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
-  .run-entry-detail { font-size: 12px; color: var(--muted); }
-  .run-entry-right { text-align: right; }
-  .run-entry-dist { font-size: 22px; font-family: var(--mono); font-weight: 500; color: var(--accent); }
-  .run-entry-unit { font-size: 11px; color: var(--muted); }
-  .run-type-picker { display: flex; gap: 8px; margin-bottom: 16px; }
-  .run-type-btn {
-    flex: 1; padding: 9px 4px; border-radius: var(--radius-sm);
-    border: 0.5px solid var(--border2); background: none;
-    color: var(--muted); font-family: var(--sans); font-size: 13px; cursor: pointer;
-    transition: all 0.15s;
-  }
-  .run-type-btn.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(200,240,58,0.3); font-weight: 500; }
-  .run-field-label { font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-  .run-type-badge {
-    font-size: 10px; font-family: var(--mono); padding: 2px 8px;
-    border-radius: 20px; display: inline-block; margin-bottom: 4px;
-  }
-  .run-type-badge.Easy { background: var(--blue-dim); color: var(--blue); }
-  .run-type-badge.Workout { background: var(--amber-dim); color: var(--amber); }
-  .run-type-badge.Long { background: rgba(168,85,247,0.12); color: #a855f7; }
+/* =========================================================
+   PLAN TAB — WEEK CARDS
+   ========================================================= */
+.week-list{ display:flex; flex-direction:column; gap:14px; padding-bottom:20px; }
 
-  .delete-run-btn {
-    background: none; border: none; color: var(--muted2);
-    font-size: 18px; cursor: pointer; padding: 4px 8px;
-  }
-  .guide-toggle {
-    padding: 11px 16px; border-bottom: 0.5px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; background: var(--surface2);
-  }
-  .guide-toggle-label {
-    font-size: 11px; font-family: var(--mono); color: var(--accent);
-    text-transform: uppercase; letter-spacing: 0.07em;
-  }
-  .guide-chevron { color: var(--muted); font-size: 16px; transition: transform 0.2s; }
-  .guide-chevron.open { transform: rotate(180deg); }
-  .guide-panel {
-    display: none; background: var(--surface2);
-    border-bottom: 0.5px solid var(--border); padding: 14px 16px;
-  }
-  .guide-benefit {
-    font-size: 12px; color: var(--muted); line-height: 1.65;
-    border-left: 2px solid var(--accent); padding-left: 10px;
-    margin-bottom: 14px;
-  }
-  .guide-section-title {
-    font-size: 10px; font-family: var(--mono); color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
-  }
-  .guide-checklist { list-style: none; margin-bottom: 14px; }
-  .guide-checklist li {
-    font-size: 12px; color: var(--text); line-height: 1.55;
-    padding: 5px 0; border-bottom: 0.5px solid var(--border);
-    display: flex; gap: 8px;
-  }
-  .guide-checklist li:last-child { border-bottom: none; }
-  .guide-check { color: var(--accent); flex-shrink: 0; }
-  .guide-ex-list { list-style: none; }
-  .guide-ex-item { padding: 8px 0; border-bottom: 0.5px solid var(--border); }
-  .guide-ex-item:last-child { border-bottom: none; }
-  .guide-ex-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
-  .guide-ex-cue { font-size: 12px; color: var(--muted); line-height: 1.55; }
+.week-card{
+  background:#FBF9F0;
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:14px;
+}
+.week-card-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.week-num{
+  font-family:var(--font-display);
+  font-size:17px;
+  color:var(--ink);
+  background:var(--parchment-dim);
+  border-radius:4px;
+  padding:2px 8px;
+}
+.week-dates{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--grey);
+  flex:1;
+}
+.week-phase{
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  padding:3px 8px;
+  border-radius:20px;
+  color:#fff;
+}
+.phase-base{ background:var(--teal); }
+.phase-build{ background:var(--ink); }
+.phase-peak{ background:var(--orange); }
+.phase-race-prep{ background:var(--amber); color:var(--ink); }
+.phase-cutback{ background:var(--grey); }
+.phase-taper{ background:#8B7E6A; }
+.phase-race-week{ background:var(--orange); }
 
-  .exercise-rows { border-top: 0.5px solid var(--border); }
-  .exercise-row {
-    padding: 12px 16px; border-bottom: 0.5px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; transition: background 0.1s;
-  }
-  .exercise-row:last-child { border-bottom: none; }
-  .exercise-row:active { background: var(--surface2); }
-  .ex-info { flex: 1; }
-  .ex-name-row { font-size: 14px; font-weight: 400; margin-bottom: 2px; }
-  .ex-scheme { font-size: 11px; font-family: var(--mono); color: var(--muted); }
-  .ex-sets-done {
-    font-size: 11px; font-family: var(--mono);
-    color: var(--accent); min-width: 50px; text-align: right;
-  }
-  .ex-sets-done.none { color: var(--muted2); }
+.day-row{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:5px;
+}
+.day-cell{
+  border-left:3px solid var(--line);
+  padding:4px 4px 4px 6px;
+  min-height:78px;
+}
+.day-cell.type-easy{ border-left-color:var(--teal); }
+.day-cell.type-pace{ border-left-color:var(--amber); }
+.day-cell.type-long{ border-left-color:var(--orange); }
+.day-cell.type-rest{ border-left-color:var(--line); }
+.day-cell.type-cross{ border-left-color:#B7AF98; }
+.day-cell.type-shakeout{ border-left-color:var(--teal); }
+.day-cell.type-race{ border-left-color:var(--orange); background:rgba(228,87,46,0.08); }
 
-  /* ── LOG MODAL ── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7); z-index: 200;
-    align-items: flex-end;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border-radius: 20px 20px 0 0;
-    width: 100%; max-height: 90vh;
-    overflow-y: auto; padding-bottom: env(safe-area-inset-bottom);
-    animation: slideUp 0.25s ease;
-  }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-handle {
-    width: 36px; height: 4px; background: var(--border2);
-    border-radius: 2px; margin: 12px auto 0;
-  }
-  .modal-header { padding: 16px 20px 12px; border-bottom: 0.5px solid var(--border); }
-  .modal-title { font-size: 17px; font-weight: 500; }
-  .modal-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
-  .modal-body { padding: 16px 20px; }
+.day-abbr{
+  font-family:var(--font-mono);
+  font-size:9.5px;
+  color:var(--grey);
+  letter-spacing:0.04em;
+}
+.day-mi{
+  font-family:var(--font-display);
+  font-size:17px;
+  line-height:1.3;
+  color:var(--ink);
+}
+.day-label{
+  font-size:9.5px;
+  line-height:1.25;
+  color:var(--ink-soft);
+  margin-top:1px;
+}
+.hill-tag{
+  display:inline-block;
+  font-family:var(--font-mono);
+  font-size:8px;
+  color:var(--orange);
+  border:1px solid var(--orange);
+  border-radius:3px;
+  padding:0 3px;
+  margin-top:2px;
+}
 
-  .set-log-row {
-    display: grid; grid-template-columns: 28px 1fr 1fr 1fr;
-    gap: 8px; align-items: center; margin-bottom: 10px;
-  }
-  .set-num { font-size: 12px; font-family: var(--mono); color: var(--muted); text-align: center; }
-  .set-input {
-    background: var(--surface2); border: 0.5px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: var(--mono); font-size: 15px;
-    padding: 10px 8px; width: 100%; text-align: center;
-    -webkit-appearance: none;
-  }
-  .set-input:focus { outline: none; border-color: var(--accent); }
-  .set-input::placeholder { color: var(--muted2); font-size: 13px; }
-  .set-labels {
-    display: grid; grid-template-columns: 28px 1fr 1fr 1fr;
-    gap: 8px; margin-bottom: 6px;
-  }
-  .set-label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-align: center; text-transform: uppercase; }
+.week-total{
+  margin-top:10px;
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:var(--grey);
+  border-top:1px dashed var(--line);
+  padding-top:8px;
+}
+.week-total strong{ color:var(--ink); font-size:14px; }
 
-  .add-set-btn {
-    width: 100%; padding: 10px; background: var(--surface2);
-    border: 0.5px dashed var(--border2); border-radius: var(--radius-sm);
-    color: var(--muted); font-family: var(--sans); font-size: 13px;
-    cursor: pointer; margin-top: 4px;
-  }
+/* =========================================================
+   TODAY TAB
+   ========================================================= */
+.today-run{
+  background:var(--ink);
+  color:var(--parchment);
+  border:none;
+}
+.today-run .card-eyebrow{ color:rgba(241,236,217,0.6); }
+.today-run-main{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  margin-top:4px;
+}
+.today-mi{
+  font-family:var(--font-display);
+  font-size:52px;
+  line-height:1;
+  color:var(--amber);
+}
+.today-run-label{
+  font-size:16px;
+  color:var(--parchment);
+}
+.hill-callout{
+  margin-top:12px;
+  padding:10px 12px;
+  background:rgba(228,87,46,0.18);
+  border-left:3px solid var(--orange);
+  border-radius:4px;
+  font-size:13px;
+  line-height:1.5;
+}
 
-  /* ── TIMER ── */
-  .timer-bar {
-    background: var(--surface2); border-radius: var(--radius);
-    padding: 14px 16px; margin-bottom: 14px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .timer-display {
-    font-size: 32px; font-family: var(--mono); font-weight: 500;
-    color: var(--accent); letter-spacing: 2px;
-  }
-  .timer-display.warning { color: var(--amber); }
-  .timer-btns { display: flex; gap: 8px; }
-  .timer-btn {
-    background: var(--surface); border: 0.5px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: var(--sans); font-size: 12px;
-    padding: 6px 12px; cursor: pointer;
-  }
-  .timer-btn.start { background: var(--accent-dim); color: var(--accent); border-color: rgba(200,240,58,0.3); }
-  .timer-presets { display: flex; gap: 6px; margin-bottom: 14px; }
-  .preset-btn {
-    flex: 1; background: var(--surface2); border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--muted);
-    font-family: var(--mono); font-size: 12px; padding: 7px 4px;
-    cursor: pointer; text-align: center;
-  }
-  .preset-btn.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(200,240,58,0.3); }
+.weather-main{ display:flex; align-items:baseline; gap:10px; }
+.weather-temp{ font-family:var(--font-display); font-size:34px; }
+.weather-desc{ font-size:14px; color:var(--ink-soft); }
+.weather-details{
+  display:flex; gap:16px;
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--grey);
+  margin-top:6px;
+}
+.weather-loc{
+  margin-top:10px;
+  font-size:11.5px;
+  color:var(--grey);
+}
+.link-btn{
+  background:none; border:none; padding:0;
+  color:var(--teal); text-decoration:underline;
+  font-size:11.5px; cursor:pointer; font-family:var(--font-body);
+}
 
-  .save-set-btn {
-    width: 100%; padding: 15px;
-    background: var(--accent); color: #000;
-    border: none; border-radius: var(--radius);
-    font-family: var(--sans); font-size: 15px; font-weight: 500;
-    cursor: pointer; margin-top: 8px;
-  }
-  .close-modal-btn {
-    width: 100%; padding: 13px;
-    background: none; color: var(--muted);
-    border: 0.5px solid var(--border); border-radius: var(--radius);
-    font-family: var(--sans); font-size: 14px;
-    cursor: pointer; margin-top: 8px;
-  }
+.today-lift-name{ font-family:var(--font-display); font-size:19px; margin-top:2px; }
+.today-lift-meta{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--grey);
+  margin-top:2px;
+}
+.week-note{ font-size:13.5px; line-height:1.5; color:var(--ink-soft); margin:10px 0 0 0; }
+.btn-link{
+  display:inline-block;
+  margin-top:12px;
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:var(--orange);
+  text-decoration:none;
+  cursor:pointer;
+}
+.today-lift.no-lift{ background:#FBF9F0; }
 
-  /* ── HISTORY SCREEN ── */
-  .history-entry {
-    background: var(--surface); border: 0.5px solid var(--border);
-    border-radius: var(--radius); margin: 0 16px 10px; padding: 14px 16px;
-  }
-  .history-date { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 6px; }
-  .history-title { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
-  .history-exercises { font-size: 12px; color: var(--muted); line-height: 1.8; }
-  .history-ex { display: flex; justify-content: space-between; }
-  .history-ex-sets { font-family: var(--mono); color: var(--accent); }
+/* =========================================================
+   STRENGTH TAB
+   ========================================================= */
+.lift-day-label{
+  font-family:var(--font-mono);
+  font-size:11.5px;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--grey);
+  margin:14px 0 6px 0;
+}
+.session-block{
+  border:1px solid var(--line);
+  border-radius:6px;
+  margin-bottom:8px;
+  overflow:hidden;
+}
+.session-head{
+  background:var(--parchment-dim);
+  padding:8px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.session-name{ font-family:var(--font-display); font-size:13.5px; }
+.session-dur{ font-family:var(--font-mono); font-size:11px; color:var(--grey); }
 
-  /* ── FEEDBACK SCREEN ── */
-  .feedback-prompt {
-    background: var(--surface2); border-radius: var(--radius);
-    padding: 14px 16px; margin: 0 16px 10px;
-    border: 0.5px solid var(--border);
-  }
-  .feedback-prompt-text { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
-  .get-feedback-btn {
-    width: 100%; padding: 14px;
-    background: var(--accent); color: #000;
-    border: none; border-radius: var(--radius);
-    font-family: var(--sans); font-size: 15px; font-weight: 500;
-    cursor: pointer;
-  }
-  .get-feedback-btn:disabled { background: var(--surface2); color: var(--muted); }
-  .feedback-result {
-    background: var(--surface); border: 0.5px solid var(--border);
-    border-radius: var(--radius); margin: 0 16px 10px;
-    padding: 16px; font-size: 14px; line-height: 1.75;
-    color: var(--text); white-space: pre-wrap;
-  }
-  .feedback-result.loading { color: var(--muted); font-style: italic; }
+.exercise{
+  border-top:1px solid var(--line);
+  background:#FBF9F0;
+}
+.exercise summary{
+  list-style:none;
+  cursor:pointer;
+  padding:10px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.exercise summary::-webkit-details-marker{ display:none; }
+.exercise summary::after{
+  content:'+';
+  font-family:var(--font-display);
+  font-size:16px;
+  color:var(--orange);
+  margin-left:auto;
+  flex-shrink:0;
+}
+.exercise[open] summary::after{ content:'\2212'; }
+.ex-name{ font-size:13.5px; font-weight:600; }
+.ex-sets{ font-family:var(--font-mono); font-size:11.5px; color:var(--grey); white-space:nowrap; }
+.ex-body{ padding:0 12px 14px 12px; }
+.ex-tag{
+  display:inline-block;
+  font-family:var(--font-mono);
+  font-size:10px;
+  text-transform:uppercase;
+  color:var(--teal);
+  border:1px solid var(--teal);
+  border-radius:20px;
+  padding:2px 8px;
+  margin-bottom:8px;
+}
+.ex-body p{ font-size:13.5px; line-height:1.55; margin:6px 0; }
 
-  .empty-state {
-    text-align: center; padding: 60px 32px;
-    color: var(--muted); font-size: 14px; line-height: 1.7;
-  }
-  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
-
-  /* ── PROGRESS SCREEN ── */
-  .stat-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 10px; margin: 0 16px 10px;
-  }
-  .stat-card {
-    background: var(--surface); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 14px;
-  }
-  .stat-label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-  .stat-value { font-size: 26px; font-family: var(--mono); font-weight: 500; color: var(--accent); }
-  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  .exercise-select {
-    width: 100%; background: var(--surface2);
-    border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
-    color: var(--text); font-family: var(--mono); font-size: 13px;
-    padding: 10px 12px; margin-bottom: 12px;
-    -webkit-appearance: none;
-  }
-  .pr-list { }
-  .pr-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 10px 0; border-bottom: 0.5px solid var(--border);
-    font-size: 13px;
-  }
-  .pr-row:last-child { border-bottom: none; }
-  .pr-ex { color: var(--text); }
-  .pr-val { font-family: var(--mono); color: var(--accent); }
-  .pr-date { font-size: 10px; color: var(--muted); margin-top: 2px; }
-
-  .run-entry-notes {
-    font-size: 11px; color: var(--muted); margin-top: 4px;
-    font-style: italic; line-height: 1.4;
-  }
-
-  input[type=number] { -moz-appearance: textfield; }
-  input[type=number]::-webkit-inner-spin-button,
-  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (min-width:600px){
+  .day-cell{ min-height:88px; padding:6px 6px 6px 8px; }
+  .day-label{ font-size:10.5px; }
+  .today-mi{ font-size:60px; }
+}
 </style>
 </head>
 <body>
 
-<!-- TODAY SCREEN -->
-<div class="screen active" id="screen-today">
-  <div class="header">
-    <div class="header-top">
-      <h1>Today</h1>
-      <span class="phase-badge" id="phase-badge">Phase 1 · Wk 1</span>
-    </div>
-    <div class="sub" id="today-date"></div>
+<header class="app-header">
+  <div class="header-inner">
+    <div class="app-title">NYC <span>26.2</span></div>
+    <div class="race-countdown" id="countdown"></div>
   </div>
-  <div class="scroll-area">
-    <div class="day-selector" id="day-selector"></div>
-    <div id="workout-list"></div>
-  </div>
-</div>
+  <svg class="elevation-strip" viewBox="0 0 400 34" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="0,28 30,26 55,10 80,22 130,20 170,21 210,23 235,6 270,18 310,17 340,16 370,19 400,17"
+      fill="none" stroke="#E4572E" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>
+  </svg>
+</header>
 
-<!-- HISTORY SCREEN -->
-<div class="screen" id="screen-history">
-  <div class="header">
-    <div class="header-top"><h1>History</h1></div>
-    <div class="sub">All logged sessions</div>
-  </div>
-  <div class="scroll-area" id="history-list"></div>
-</div>
+<main>
+  <section id="tab-today" class="tab-panel active"></section>
+  <section id="tab-plan" class="tab-panel"></section>
+  <section id="tab-strength" class="tab-panel"></section>
+</main>
 
-<!-- PROGRESS SCREEN -->
-<div class="screen" id="screen-progress">
-  <div class="header">
-    <div class="header-top"><h1>Progress</h1></div>
-    <div class="sub">Personal records & volume</div>
-  </div>
-  <div class="scroll-area">
-    <div class="stat-grid" id="stat-grid"></div>
-    <div class="card" style="margin-top:4px">
-      <div class="card-title">Personal records</div>
-      <div class="pr-list" id="pr-list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- FEEDBACK SCREEN -->
-<div class="screen" id="screen-feedback">
-  <div class="header">
-    <div class="header-top"><h1>AI Feedback</h1></div>
-    <div class="sub">Powered by Claude</div>
-  </div>
-  <div class="scroll-area">
-    <div class="feedback-prompt">
-      <div class="feedback-prompt-text">Claude will review your recent logged sessions and give you specific feedback on load progression, recovery, and whether your training aligns with the study's recommendations.</div>
-      <button class="get-feedback-btn" id="feedback-btn" onclick="getFeedback()">Analyze my training ↗</button>
-    </div>
-    <div id="feedback-output"></div>
-  </div>
-</div>
-
-<!-- RUNS SCREEN -->
-<div class="screen" id="screen-runs">
-  <div class="header">
-    <div class="header-top"><h1>Runs</h1></div>
-    <div class="sub">Log your training runs</div>
-  </div>
-  <div class="scroll-area">
-    <button class="log-run-btn" onclick="openRunModal()">+ Log a run</button>
-    <div id="run-list"></div>
-  </div>
-</div>
-
-<!-- RUN LOG MODAL -->
-<div class="modal-overlay" id="run-modal-overlay" onclick="closeRunModalIfOutside(event)">
-  <div class="modal" id="run-modal">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <div class="modal-title">Log run</div>
-      <div class="modal-sub" id="run-modal-date"></div>
-    </div>
-    <div class="modal-body">
-
-      <div class="run-field-label">Run type</div>
-      <div class="run-type-picker" id="run-type-picker">
-        <button class="run-type-btn active" onclick="selectRunType(this, 'Easy')">Easy</button>
-        <button class="run-type-btn" onclick="selectRunType(this, 'Workout')">Workout</button>
-        <button class="run-type-btn" onclick="selectRunType(this, 'Long run')">Long run</button>
-      </div>
-
-      <div class="run-fields">
-        <div class="run-field">
-          <div class="run-field-label">Distance (miles)</div>
-          <input class="set-input" id="run-distance" type="number" placeholder="6.2" inputmode="decimal" step="0.1" style="width:100%">
-        </div>
-        <div class="run-field" style="margin-top:12px">
-          <div class="run-field-label">Average pace (min/mile)</div>
-          <div style="display:flex;gap:8px">
-            <input class="set-input" id="run-pace-min" type="number" placeholder="mm" inputmode="numeric" style="flex:1">
-            <div style="display:flex;align-items:center;color:var(--muted);font-family:var(--mono)">:</div>
-            <input class="set-input" id="run-pace-sec" type="number" placeholder="ss" inputmode="numeric" min="0" max="59" style="flex:1">
-          </div>
-        </div>
-        <div class="run-field" style="margin-top:12px">
-          <div class="run-field-label">Effort (RPE 1–10)</div>
-          <input class="set-input" id="run-rpe" type="number" placeholder="7" inputmode="decimal" min="1" max="10" step="0.5" style="width:100%">
-        </div>
-        <div class="run-field" style="margin-top:12px">
-          <div class="run-field-label">Avg heart rate (bpm)</div>
-          <input class="set-input" id="run-hr" type="number" placeholder="148" inputmode="numeric" style="width:100%">
-        </div>
-        <div class="run-field" style="margin-top:12px">
-          <div class="run-field-label">Notes (optional)</div>
-          <textarea class="set-input run-notes" id="run-notes" placeholder="How did it feel? Any issues?" rows="2" style="width:100%;resize:none;font-family:var(--sans);font-size:14px;padding:10px"></textarea>
-        </div>
-      </div>
-
-      <button class="save-set-btn" onclick="saveRun()" style="margin-top:16px">Save run</button>
-      <button class="close-modal-btn" onclick="closeRunModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- LOG MODAL -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModalIfOutside(event)">
-  <div class="modal" id="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title"></div>
-      <div class="modal-sub" id="modal-sub"></div>
-    </div>
-    <div class="modal-body">
-
-      <div class="timer-presets">
-        <button class="preset-btn" onclick="setTimer(60)">1 min</button>
-        <button class="preset-btn" onclick="setTimer(90)">1:30</button>
-        <button class="preset-btn active" onclick="setTimer(180)">3 min</button>
-        <button class="preset-btn" onclick="setTimer(240)">4 min</button>
-      </div>
-      <div class="timer-bar">
-        <div class="timer-display" id="timer-display">3:00</div>
-        <div class="timer-btns">
-          <button class="timer-btn start" id="timer-start-btn" onclick="toggleTimer()">Start</button>
-          <button class="timer-btn" onclick="resetTimer()">Reset</button>
-        </div>
-      </div>
-
-      <div class="set-labels">
-        <div class="set-label"></div>
-        <div class="set-label">lbs</div>
-        <div class="set-label">reps</div>
-        <div class="set-label">RPE</div>
-      </div>
-      <div id="set-rows"></div>
-      <button class="add-set-btn" onclick="addSetRow()">+ Add set</button>
-
-      <button class="save-set-btn" onclick="saveExercise()">Save & close</button>
-      <button class="close-modal-btn" onclick="closeModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <button class="nav-btn active" onclick="showScreen('today', this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
-    Today
-  </button>
-  <button class="nav-btn" onclick="showScreen('runs', this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0M5 20l4-8 3 3 3-5 4 10"/></svg>
-    Runs
-  </button>
-  <button class="nav-btn" onclick="showScreen('history', this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-    History
-  </button>
-  <button class="nav-btn" onclick="showScreen('progress', this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 17l4-4 4 4 4-6 4 2"/></svg>
-    Progress
-  </button>
-  <button class="nav-btn" onclick="showScreen('feedback', this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 1 0 20A10 10 0 0 1 12 2z"/><path d="M12 8v4M12 16h.01"/></svg>
-    Feedback
-  </button>
+<nav class="tab-bar">
+  <button class="tab-btn active" data-tab="today">Today</button>
+  <button class="tab-btn" data-tab="plan">Plan</button>
+  <button class="tab-btn" data-tab="strength">Strength</button>
 </nav>
 
 <script>
-// ── PROGRAM DATA ──
-const PROGRAM = {
-  phases: [
-    {
-      name: "Phase 1 — Foundation",
-      weeks: [1,2,3,4],
-      days: [
-        {
-          id: "A", type: "heavy", label: "Heavy lift", name: "Day A — Lower body", when: "Tuesday evening",
-          warmup: {
-            duration: "8–10 min",
-            steps: [
-              { icon: "🚴", label: "Bike or row", detail: "5 min at easy pace — raises core temp and gets blood into your legs after a day of sitting." },
-              { icon: "🦵", label: "Leg swing (front/back)", detail: "10 each leg — stand tall, swing one leg forward and back like a pendulum. Loosens the hip flexors you'll be loading under the bar." },
-              { icon: "🦵", label: "Leg swing (side to side)", detail: "10 each leg — same idea but laterally. Opens the hips and primes the abductors for squat depth." },
-              { icon: "🔄", label: "Hip circle", detail: "10 each direction — hands on hips, draw big circles with your pelvis. Activates the glutes and lubricates the hip joint." },
-              { icon: "🧘", label: "Deep squat hold", detail: "30 seconds — feet hip-width, sink into a deep squat and hold. Use a rack for balance if needed. This is your mobility check before adding load." },
-              { icon: "🏋️", label: "Warm-up squat sets", detail: "2–3 sets working up to your working weight: e.g. 40% × 5, 60% × 3, 80% × 2. Don't skip these — at 88–92% your joints need to be fully primed." }
-            ]
-          },
-          guide: {
-            benefit: "High-load squatting and hip hinge work builds the maximal strength base the study identifies as the primary driver of running economy gains — especially at faster marathon paces. You're training your nervous system to recruit more muscle fibers per stride, which means less effort at the same speed.",
-            checklist: [
-              "Eat a full meal 2–3 hours before. This is your heaviest session of the week — don't train fasted.",
-              "Warm up thoroughly: 10 min easy bike or row, then 2–3 warm-up sets on the squat working up to your working weight.",
-              "Target RPE 8 in weeks 1–2. Leave one rep in the tank on every set — don't grind.",
-              "Rest fully between sets: 3 full minutes minimum. Use the timer. Cutting rest kills the quality of subsequent sets at these loads.",
-              "If your form breaks down on any rep, end the set. Log the reps completed — don't push through technical failure."
-            ],
-            exercises: [
-              { name: "Back squat", cue: "Bar on upper traps, big breath and brace before you unrack. Descend 2–3 seconds under control, drive the floor away on the way up. Knees track over toes throughout. At 88–92% these should feel heavy but technically clean." },
-              { name: "Romanian deadlift", cue: "Hinge at the hips, not the lower back. Push your hips back until you feel a strong hamstring stretch — usually when the bar passes your knees. Keep the bar close to your legs. Squeeze your glutes to stand." },
-              { name: "Barbell hip thrust", cue: "Upper back on bench, bar padded across your hips. Drive through your heels, squeeze your glutes hard at the top, hold 1 second. Don't hyperextend your lower back at lockout — ribs stay down." },
-              { name: "Single-leg press", cue: "One foot centered on the plate. Full range of motion — bring the platform close to your chest before pressing. Keep your heel flat, don't let the knee cave inward. This builds the single-leg stability you need mid-stride." },
-              { name: "Loaded calf raise", cue: "Full range — all the way down to a deep stretch, all the way up to your toes. Use a 3-second eccentric (lowering phase). The slow lowering is what builds Achilles tendon stiffness for better elastic energy return." }
-            ]
-          },
-          exercises: [
-            { name: "Back squat", scheme: "5×4 @ 88–92% 1RM" },
-            { name: "Romanian deadlift", scheme: "4×5 @ 80% 1RM" },
-            { name: "Barbell hip thrust", scheme: "3×6 @ 80% 1RM" },
-            { name: "Single-leg press", scheme: "3×6 each leg" },
-            { name: "Loaded calf raise", scheme: "3×8 slow eccentric" },
-          ]
-        },
-        {
-          id: "B", type: "plyo", label: "Plyometric", name: "Day B — Explosive", when: "Wednesday evening",
-          warmup: {
-            duration: "6–8 min",
-            steps: [
-              { icon: "🚶", label: "Easy walk or light jog", detail: "3 min — you've already run this morning, so this is just enough to loosen up, not re-warm up fully." },
-              { icon: "💆", label: "Calf & Achilles massage gun", detail: "60–90 sec each leg — run the massage gun slowly up the calf and around the Achilles insertion. These tendons are taking the most load in this session." },
-              { icon: "🦶", label: "Ankle circles", detail: "10 each direction per foot — sit down, draw big circles with your foot. Lubricates the ankle joint before rapid impact loading." },
-              { icon: "🦵", label: "Leg swing (front/back)", detail: "10 each leg — loosens the hip flexors and hamstrings for bounding movements." },
-              { icon: "⬆️", label: "Two-foot easy hops", detail: "2 × 10 reps — soft, low hops on both feet. Start slow and easy. This is your Achilles check — if anything feels sharp, stop and do the session with reduced volume." }
-            ]
-          },
-          guide: {
-            benefit: "Plyometric training teaches your tendons to store and release elastic energy, reducing the muscular effort needed per stride. The study found plyometrics improve running economy most at easier paces — exactly your long run and base-building speeds. This session comes after a morning workout run, so keep intensity focused but volume conservative.",
-            checklist: [
-              "This session follows a morning run — your legs won't be fresh. That's fine, but don't push through sharp pain or joint discomfort.",
-              "Quality over quantity on every rep. A sloppy depth jump defeats the purpose. If you're too fatigued for explosive intent, cut volume by one set per exercise.",
-              "Ground contact time is the metric — land and leave the ground as fast as possible. You're not jumping high, you're training reactivity.",
-              "No heavy shoes. Use your running shoes or flat trainers — you want to feel the ground.",
-              "Short warm-up: 5 min jog, then 2 sets of easy two-foot hops to prime the ankles before your first depth jump."
-            ],
-            exercises: [
-              { name: "Depth jump", cue: "Step off the box (don't jump off), land on both feet simultaneously, and immediately explode upward. The goal is minimal time between landing and takeoff. Start at 24in — if you can't react instantly, the box is too high." },
-              { name: "Alternate leg bound", cue: "Like an exaggerated running stride. Drive off one leg explosively, cover as much horizontal distance as possible per stride. Swing your arms aggressively. Land softly on the opposite foot and immediately drive again." },
-              { name: "Single-leg hurdle hop", cue: "One leg only — hop over each hurdle as fast as possible, focusing on a stiff ankle and quick ground contact. This directly mimics the single-leg demand of every running stride." },
-              { name: "Box jump", cue: "Quick quarter-squat wind-up, arms swing back then forward as you explode up. Land softly with hips and knees absorbing the impact. Step down — never jump down. Use the highest box you can land on cleanly." },
-              { name: "Ankle stiffness drill", cue: "Fast, low-amplitude bounce on your forefoot with nearly straight knees. Think of your ankles as springs, not your calves as pumps. Ground contact should be barely audible. Keep going for 15 fast reps without rhythm breaks." }
-            ]
-          },
-          exercises: [
-            { name: "Depth jump", scheme: "4×5 @ 24in box" },
-            { name: "Alternate leg bound", scheme: "4×6 each leg" },
-            { name: "Single-leg hurdle hop", scheme: "3×5 each" },
-            { name: "Box jump", scheme: "3×5 maximal height" },
-            { name: "Ankle stiffness drill", scheme: "3×15 fast GCT" },
-          ]
-        },
-        {
-          id: "C", type: "heavy", label: "Heavy lift", name: "Day C — Posterior chain", when: "Thursday evening",
-          warmup: {
-            duration: "8–10 min",
-            steps: [
-              { icon: "🚴", label: "Bike or row", detail: "5 min easy — gets the posterior chain blood flow going after two demanding days." },
-              { icon: "💆", label: "Glute & hamstring massage gun", detail: "60 sec each side — focus on the glute-hamstring junction and the upper hamstring near the sit bone. These are the primary movers in deadlifts." },
-              { icon: "🦋", label: "Hip 90/90 stretch", detail: "45 sec each side — sit on the floor, both legs bent at 90 degrees, front and back. Rotate your torso over the front hip. Opens the hip capsule before heavy hinging." },
-              { icon: "🔄", label: "Glute bridge (bodyweight)", detail: "2 × 10 — slow and deliberate. Drive through your heels, squeeze hard at the top for 2 seconds. This activates the glutes before the session so they fire immediately under load." },
-              { icon: "🏋️", label: "Deadlift warm-up sets", detail: "2–3 sets building to working weight: e.g. 40% × 5, 65% × 3, 82% × 2. At 90–93% working weight, thorough warm-up sets are non-negotiable." }
-            ]
-          },
-          guide: {
-            benefit: "The deadlift and its accessory work target the glutes and hamstrings — the primary engines of forward propulsion in running. Strong hamstrings also protect your knees during the high mileage ahead. The Nordic hamstring curl in particular has strong evidence for reducing hamstring injury risk, which is critical as your long runs build.",
-            checklist: [
-              "This is your second heavy day this week. If your legs feel genuinely beat up from Tuesday and Wednesday, reduce deadlift sets to 3×3 — better to be consistent than to push through poor recovery.",
-              "Deadlift setup is everything at 90%+. Take your time before each rep: mid-foot under bar, grip just outside legs, chest tall, big breath, then pull.",
-              "The bar should stay in contact with your shins the entire lift. If it swings forward, reset.",
-              "Bulgarian split squats at this intensity can be humbling — use a weight that lets you hit depth on every rep without the front knee caving.",
-              "Save the Nordic hamstring curl for last — it's the highest injury-risk exercise when done fatigued. If your hamstrings are cramping, skip it and add it next week."
-            ],
-            exercises: [
-              { name: "Deadlift", cue: "Push the floor away rather than pulling the bar up. Keep your shoulder blades pulled down and back throughout. At 90–93% for 3 reps, every rep should feel maximal but technically identical. Re-set your brace between each rep — don't touch-and-go at these loads." },
-              { name: "Bulgarian split squat", cue: "Rear foot elevated on bench, front foot far enough forward that your shin stays vertical at the bottom. Descend straight down, don't let your torso pitch too far forward. The front glute should do the work — if you feel it mostly in your quad, step your front foot further out." },
-              { name: "Barbell step-up", cue: "Drive through the heel of the stepping leg only — don't push off your back foot. Stand fully upright at the top before stepping down. Slow and controlled. This builds the single-leg hip extension strength that directly transfers to your push-off phase." },
-              { name: "Nordic hamstring curl", cue: "Anchor your ankles, start fully upright, then lower your body toward the floor as slowly as possible using your hamstrings as a brake. Catch yourself with your hands at the bottom, push back up, and use your hamstrings to pull yourself back to upright. Brutally hard but extremely effective." },
-              { name: "Standing calf raise", cue: "Use the calf raise machine or a step with a barbell. Full range — deep stretch at the bottom, all the way up on your toes. 3-second lowering phase. Your Achilles adapts to load over weeks, not sessions — be consistent here." }
-            ]
-          },
-          exercises: [
-            { name: "Deadlift", scheme: "5×3 @ 90–93% 1RM" },
-            { name: "Bulgarian split squat", scheme: "4×5 each leg" },
-            { name: "Barbell step-up", scheme: "3×5 each leg" },
-            { name: "Nordic hamstring curl", scheme: "3×5 bodyweight" },
-            { name: "Standing calf raise", scheme: "3×6 slow eccentric" },
-          ]
-        }
-      ]
-    },
-    {
-      name: "Phase 2 — Power",
-      weeks: [5,6,7,8,9],
-      days: [
-        {
-          id: "A", type: "combo", label: "Combined", name: "Day A — Complex lower", when: "Tuesday evening",
-          warmup: {
-            duration: "10 min",
-            steps: [
-              { icon: "🚴", label: "Bike or row", detail: "5 min — complex training is your most neurologically demanding session. A thorough warm-up is more important here than any other day." },
-              { icon: "🦵", label: "Leg swing (front/back + lateral)", detail: "10 each direction, each leg — prime the hip through its full range before heavy squatting and jumping." },
-              { icon: "🔄", label: "Hip circle + glute activation", detail: "10 circles each way, then 10 bodyweight glute bridges — you need the glutes firing immediately for the hip thrust complex." },
-              { icon: "⬆️", label: "Progressive jump warm-up", detail: "5 easy two-foot hops → 5 medium box jumps → 3 near-max box jumps. You're priming the stretch-shortening cycle before the complex pairs demand maximum output from it." },
-              { icon: "🏋️", label: "Squat & deadlift warm-up sets", detail: "One warm-up set each at ~60%: 3 squats, 2 deadlifts. Enough to feel the movement, not enough to fatigue. Your working sets start heavy." }
-            ]
-          },
-          guide: {
-            benefit: "Complex training — pairing a heavy lift immediately with an explosive movement — produced the largest running economy improvements in the study. The heavy lift fires up your nervous system, and the explosive movement that follows capitalises on that state to produce more power than you could cold. Over weeks, your legs learn to be more explosive at every stride.",
-            checklist: [
-              "The timing of the complex pair is critical: finish the lift, re-rack, and reach the explosive movement within 10–20 seconds. Have your box or landing zone set up before you start each set.",
-              "Rest 3–4 full minutes between complex sets — not between the lift and the jump, but between each complete pair.",
-              "The jump or bound is the point of the complex — don't let it become sloppy just because something heavy came before it. If the explosive movement quality drops, the weight is too heavy.",
-              "Use the same working weights as late Phase 1. You're not trying to set new maxes — you're training the nervous system transfer between strength and power.",
-              "This is your longest session of the week. Budget 75–90 minutes including warm-up."
-            ],
-            exercises: [
-              { name: "Back squat → depth jump", cue: "Complete 3 heavy squat reps, re-rack immediately, walk to the box and perform 4 depth jumps within 20 seconds. The jump should feel explosive — if your legs are completely dead, rest 10 more seconds before the jumps but log it. Rest 3–4 min before the next complex set." },
-              { name: "Deadlift → broad jump", cue: "Pull 2 maximal deadlift reps, stand up, step back from the bar and immediately perform 4 maximal broad jumps. Land with both feet, reset, and jump again. The horizontal direction is intentional — it matches the force vector of running better than vertical jumps." },
-              { name: "Hip thrust → scissor jump", cue: "Complete your hip thrust reps, stand up from the bench, and immediately perform scissor jumps — alternating split squat jumps driving your knee high on each rep. These train the explosive hip extension that powers your push-off mid-stride." },
-              { name: "Bulgarian squat", cue: "No complex pair here — straight sets at 85%. Focus on single-leg stability and full depth. This is the accessory work that ensures both legs are developing evenly." },
-              { name: "Ankle bounce drill", cue: "Finish the session with ankle bounces to reinforce tendon stiffness after the heavy work. Fast, reactive, minimal ground contact. Think of it as a cooldown that's still doing useful training." }
-            ]
-          },
-          exercises: [
-            { name: "Back squat → depth jump", scheme: "4×(3+4) @ 90% / 24in" },
-            { name: "Deadlift → broad jump", scheme: "4×(2+4) @ 93%+ / max" },
-            { name: "Hip thrust → scissor jump", scheme: "3×(4+6) @ 85% / BW" },
-            { name: "Bulgarian squat", scheme: "3×4 each @ 85%" },
-            { name: "Ankle bounce drill", scheme: "3×15 minimal GCT" },
-          ]
-        },
-        {
-          id: "B", type: "plyo", label: "Plyometric", name: "Day B — Speed-strength", when: "Wednesday evening",
-          warmup: {
-            duration: "6–8 min",
-            steps: [
-              { icon: "🚶", label: "Easy jog", detail: "3 min — light enough to not add fatigue on top of the morning run." },
-              { icon: "💆", label: "Calf, Achilles & shin massage gun", detail: "60 sec each leg — single-leg depth jumps are high-impact. The shin and Achilles need to be loose and pain-free before you start." },
-              { icon: "🦶", label: "Ankle circle + toe spread", detail: "10 circles each direction per foot, then splay your toes wide and hold 5 sec. Activates the intrinsic foot muscles that contribute to ground contact stiffness." },
-              { icon: "⬆️", label: "Single-leg hop warm-up", detail: "10 easy hops each foot in place — check that each ankle feels stable and responsive. If one side feels off, spend an extra 30 sec massaging that calf before continuing." },
-              { icon: "🏃", label: "Skipping drill", detail: "2 × 20m — exaggerated skip with high knee drive and forefoot landing. Warms up the hip flexors and gets your foot contact pattern right before the drills." }
-            ]
-          },
-          guide: {
-            benefit: "Phase 2 plyometrics shift from building basic tendon stiffness to training single-leg explosive power at higher intensities. Single-leg depth jumps directly replicate the loading your leg experiences at ground contact during running. Improving this quality reduces your ground contact time per stride — one of the clearest markers of better running economy.",
-            checklist: [
-              "Again, this follows a morning workout run. Check in honestly: if your Wednesday run had a hard interval session, drop the last exercise and call it a 4-exercise day.",
-              "Single-leg work at this intensity demands good ankle and knee stability. If you feel any sharp joint pain (not muscle fatigue), stop that exercise.",
-              "Land every single-leg rep on a stable ankle — no wobble, no rolling inward. Control matters more than volume.",
-              "The high-knee sprint drill is not a jog — it's a fast, exaggerated drill focusing on knee drive and quick foot contact. 20 meters, then walk back, repeat.",
-              "These sessions should take 45–55 minutes. If you're going longer, your rest periods are too long."
-            ],
-            exercises: [
-              { name: "Single-leg depth jump", cue: "Step off the box onto one foot, absorb briefly, then explode straight up off that same leg. Land on two feet. The eccentric load on one leg is significantly higher than a two-leg version — start at 16in and only go higher if your landing is completely stable." },
-              { name: "Horizontal bound", cue: "Drive off one foot, cover maximum horizontal distance, land on the opposite foot, immediately bound again. Like running in slow motion with maximum effort per stride. This is the most running-specific plyometric in the program." },
-              { name: "Hurdle hops (5 hurdles)", cue: "Set up 5 hurdles in a row and hop over them continuously with both feet, focusing on fast ground contact between each. Don't pause between hurdles. The continuous nature trains your legs to maintain stiffness under repeated impacts — exactly what a marathon demands." },
-              { name: "Split squat jump", cue: "Start in a split squat position, jump and switch legs in the air, land in the opposite split squat. Land softly, immediately explode again. Focus on height and a stable landing — not just switching fast." },
-              { name: "High-knee sprint drill", cue: "Drive your knees up to hip height on each stride, land on your forefoot, and move forward at close to sprint speed. Arms drive aggressively opposite to legs. The goal is to reinforce fast cadence and high knee lift — two mechanics that deteriorate as marathon fatigue sets in." }
-            ]
-          },
-          exercises: [
-            { name: "Single-leg depth jump", scheme: "4×4 each @ 16in" },
-            { name: "Horizontal bound", scheme: "4×6 maximal distance" },
-            { name: "Hurdle hops (5 hurdles)", scheme: "3×5 continuous" },
-            { name: "Split squat jump", scheme: "3×8 explosive" },
-            { name: "High-knee sprint drill", scheme: "3×20m fast cadence" },
-          ]
-        },
-        {
-          id: "C", type: "combo", label: "Combined", name: "Day C — Complex posterior", when: "Thursday evening",
-          warmup: {
-            duration: "8–10 min",
-            steps: [
-              { icon: "🚴", label: "Bike or row", detail: "5 min — second complex day of the week. Your legs have done a lot. A proper warm-up here is as much about checking in with your body as it is about raising temperature." },
-              { icon: "💆", label: "Hamstring & glute massage gun", detail: "60 sec each side — focus on the upper hamstring and the glute-hamstring tie-in. These are the primary movers in deadlifts and step-ups." },
-              { icon: "🦵", label: "Leg swing (front/back)", detail: "10 each leg — loosens the hamstrings and hip flexors before trap bar pulls and step-ups." },
-              { icon: "🧘", label: "Adductor rock (kneeling)", detail: "10 each side — kneel on one knee, shift your weight toward that knee laterally until you feel a groin stretch. Releases the inner thigh before split squat variations." },
-              { icon: "🏋️", label: "Trap bar + front squat warm-up", detail: "1 light set each: trap bar deadlift at 50% × 3, front squat at 50% × 3. Feel the front squat rack position — elbows high before the working sets." }
-            ]
-          },
-          guide: {
-            benefit: "The second complex session of the week targets your posterior chain — the glutes, hamstrings, and calves that are doing the majority of the propulsive work in every marathon stride. Pairing the trap bar deadlift with a box jump is one of the most effective power-transfer complexes for runners because the trap bar allows a more upright torso, matching the force angle of running better than a conventional pull.",
-            checklist: [
-              "Two heavy days in one week means recovery is critical. If you didn't sleep well or nutrition has been poor, drop one complex pair and do straight sets instead.",
-              "Set up all your equipment before you start — box, bar loaded, landing zone clear. The transition speed between lift and explosive movement is where the training effect lives.",
-              "The lunge jump in the step-up complex is high-impact. Land with control — don't sacrifice your knees for speed.",
-              "Nordic hamstring curls near the end of a heavy session are hard. It's okay if you can only lower for 3–4 seconds by this point in the program — consistency matters more than perfect reps.",
-              "This is the last hard session before Saturday's long run. Finish by 8pm if possible and prioritize sleep and protein intake tonight."
-            ],
-            exercises: [
-              { name: "Front squat → jump squat", cue: "Front squat demands an upright torso and significant quad strength. Bar rests on your front delts, elbows high. After your reps, immediately perform jump squats — quarter squat and explode upward, landing softly. The jump squat is the direct power transfer from the quad strength built in the front squat." },
-              { name: "Trap bar DL → box jump", cue: "Stand inside the trap bar, handles at your sides. Push the floor away — more leg drive than a conventional deadlift. Re-rack, step to the box immediately, and perform maximal height box jumps. The trap bar deadlift and box jump share a nearly identical force curve, making this the most direct power transfer complex in the program." },
-              { name: "Step-up → lunge jump", cue: "Complete your step-up reps on each leg, then immediately perform lunge jumps — alternating split squat jumps with explosive knee drive. The step-up builds the concentric strength, the lunge jump trains how fast you can express it." },
-              { name: "Nordic hamstring curl", cue: "By this point in Phase 2 you may have added a small weight vest or hold a plate to your chest. Lower as slowly as you can control. The eccentric phase is the training stimulus — the slower the lower, the more effective. Catch with your hands at the bottom every time." },
-              { name: "Single-leg calf press", cue: "On the leg press machine, one foot at the base of the platform. Full range of motion — deep stretch, full plantarflexion at the top. Single-leg version increases the load per leg and better replicates the calf demand of running." }
-            ]
-          },
-          exercises: [
-            { name: "Front squat → jump squat", scheme: "4×(3+4) @ 85% / BW" },
-            { name: "Trap bar DL → box jump", scheme: "4×(3+3) @ 90% / max" },
-            { name: "Step-up → lunge jump", scheme: "3×(5+4) each leg" },
-            { name: "Nordic hamstring curl", scheme: "3×4 weighted opt." },
-            { name: "Single-leg calf press", scheme: "3×8 each leg" },
-          ]
-        }
-      ]
-    },
-    {
-      name: "Phase 3 — Integration",
-      weeks: [10,11,12],
-      days: [
-        {
-          id: "A", type: "combo", label: "Combined", name: "Day A — Complex (reduced vol)", when: "Tuesday evening",
-          warmup: {
-            duration: "8 min",
-            steps: [
-              { icon: "🚴", label: "Bike or row", detail: "4 min easy — Phase 3 sessions are shorter but intensity stays high. Don't cut the warm-up just because volume is lower." },
-              { icon: "🦵", label: "Leg swing (front/back + lateral)", detail: "10 each direction, each leg — same as Phase 2." },
-              { icon: "⬆️", label: "Progressive jump warm-up", detail: "5 easy hops → 3 medium box jumps → 2 near-max jumps. The same pre-complex activation routine that's been working for 9 weeks." },
-              { icon: "🏋️", label: "One warm-up set each", detail: "Squat at 65% × 2, deadlift at 65% × 1. Just enough to feel the load before your working sets." }
-            ]
-          },
-          guide: {
-            benefit: "You're now approaching peak mileage. The goal of this session is not to build new fitness — it's to preserve every adaptation you've built over 9 weeks. Volume drops by ~30% but intensity stays identical. Your nervous system retains the strength and power qualities as long as the load stays high and the explosive intent stays sharp.",
-            checklist: [
-              "Resist the urge to add sets. More is not better here. The reduced volume is intentional and backed by the research — maintenance requires far less stimulus than building.",
-              "Keep complex pair transition times sharp — same 10–20 second window as Phase 2. Don't let the reduced volume make you sloppy about execution.",
-              "If your long runs are going well and your legs feel good, this is the version of the session to do. If you're carrying significant fatigue, drop to Day A as straight sets only — no complex pairs.",
-              "This session should take 50–60 minutes. If it's taking longer, your rest periods have crept up.",
-              "Log your weights carefully this phase — you want to confirm you're maintaining Phase 2 loads, not quietly reducing them."
-            ],
-            exercises: [
-              { name: "Back squat → depth jump", cue: "Same weight as your Phase 2 working sets, one fewer set. The depth jump should feel sharp — if it doesn't, you needed this deload more than you thought. Focus on the quality of each rep rather than pushing new loads." },
-              { name: "Deadlift → broad jump", cue: "Two reps at 93%+, then 3 maximal broad jumps. At this point in training your nervous system is well-adapted to this pairing — the transition should feel almost automatic. Trust the process and don't add reps." },
-              { name: "Hip thrust", cue: "Straight sets, no complex pair. Four heavy reps — full glute contraction at the top, 1-second hold. This maintains the hip extension strength that's powering your long run push-off." },
-              { name: "Ankle bounce drill", cue: "Two sets to maintain Achilles stiffness adaptations. These take 90 seconds total and are worth keeping in even on the tightest days." }
-            ]
-          },
-          exercises: [
-            { name: "Back squat → depth jump", scheme: "3×(3+3) @ 90%+ / 24in" },
-            { name: "Deadlift → broad jump", scheme: "3×(2+3) @ 93%+ / max" },
-            { name: "Hip thrust", scheme: "3×4 @ 88% 1RM" },
-            { name: "Ankle bounce drill", scheme: "2×15 fast" },
-          ]
-        },
-        {
-          id: "B", type: "plyo", label: "Plyometric", name: "Day B — Reactive speed", when: "Wednesday evening",
-          warmup: {
-            duration: "5–6 min",
-            steps: [
-              { icon: "🚶", label: "Easy jog", detail: "2–3 min — the lightest warm-up of the program. You're deep into peak mileage; don't add unnecessary load." },
-              { icon: "💆", label: "Calf & Achilles massage gun", detail: "45 sec each leg — quick check-in on tendon health. Any lingering soreness from the week's running should be noted before you load the Achilles with depth jumps." },
-              { icon: "🦶", label: "Ankle circles + easy hops", detail: "8 circles each foot, then 8 easy two-foot hops. Simple and quick — your body knows these movements well by now." }
-            ]
-          },
-          guide: {
-            benefit: "A shorter, sharper plyometric session designed to maintain tendon stiffness and reactive speed without adding fatigue on top of peak mileage weeks. The exercises are the same as Phase 2 but with one fewer set each. At this stage of your base build, keeping these qualities alive is the priority — they will directly translate to better form and efficiency in your race-specific block.",
-            checklist: [
-              "This is the session most likely to be cut when marathon training load peaks. That's fine — running quality always takes priority. But try to keep at least two exercises if you do shorten it.",
-              "Your Wednesday morning workout run is probably getting harder as you approach peak mileage. Be honest about how your legs feel before starting plyometrics.",
-              "Three sets per exercise maximum. Do not add sets even if you feel good — save it for the long run.",
-              "Focus on quality of ground contact. At this point in training, you should be noticeably better at reacting off the ground than you were in Phase 1. Notice it.",
-              "Finish with the high-knee drill — it's a great way to reinforce running mechanics at the end of a session and only takes a few minutes."
-            ],
-            exercises: [
-              { name: "Single-leg depth jump", cue: "Three sets at the same 16in height. Your landing stability should be significantly better than Phase 1 by now. If you feel any Achilles soreness that wasn't there before, drop to two-leg depth jumps this week." },
-              { name: "Hurdle hops (5)", cue: "Continuous hops over 5 hurdles, both feet. Fast ground contact between each. Three sets. This maintains the repeated-impact resilience your legs will need in the final miles of a marathon." },
-              { name: "Alternate leg bound", cue: "Maximal horizontal distance per stride. Three sets of 5 each leg. By now your bounding distance should be measurably further than it was in Phase 1 — that's a direct indicator of improved running power." },
-              { name: "High-knee drill", cue: "20 meters, three reps. Fast cadence, high knees, forefoot contact. Think of it as neuromuscular priming for your next morning run. End every session with this." }
-            ]
-          },
-          exercises: [
-            { name: "Single-leg depth jump", scheme: "3×4 each @ 16in" },
-            { name: "Hurdle hops (5)", scheme: "3×5 continuous" },
-            { name: "Alternate leg bound", scheme: "3×5 each leg" },
-            { name: "High-knee drill", scheme: "3×20m" },
-          ]
-        },
-        {
-          id: "C", type: "heavy", label: "Heavy lift", name: "Day C — Strength maintenance", when: "Thursday evening",
-          warmup: {
-            duration: "7–8 min",
-            steps: [
-              { icon: "🚴", label: "Bike or row", detail: "4 min easy — you want to be warm but not pre-fatigued before heavy squats and deadlifts." },
-              { icon: "💆", label: "Quad & hip flexor massage gun", detail: "45 sec each side — after three days of running and lifting, these are likely tight. Release them before asking them to work under load." },
-              { icon: "🧘", label: "Deep squat hold", detail: "30 seconds — your pre-session mobility check. If something feels restricted, add an extra 30 sec hip circle each side." },
-              { icon: "🏋️", label: "Warm-up sets", detail: "Squat: 55% × 3, 75% × 2. Deadlift: 55% × 3. This is enough. Your body has been doing these movements for 12 weeks — it doesn't need much to be ready." }
-            ]
-          },
-          guide: {
-            benefit: "Short, heavy, and done. Three exercises, three sets, high loads. The research is clear that you need very little volume to maintain strength adaptations — but you need to keep the intensity high. This session takes 35–45 minutes and should feel almost easy volume-wise, even though the weights are still heavy. That contrast is the point: you're recovered enough to run well on Saturday.",
-            checklist: [
-              "This is the lightest volume session of the entire 12 weeks. Three sets per exercise. Do not add anything.",
-              "Loads stay at Phase 2 levels — 90%+ on the squat, 85% on the RDL. If you can't hit those loads, something in your recovery is off and worth addressing.",
-              "Finish by 7pm if possible. You want maximum recovery time before Saturday's long run.",
-              "After this session: eat well, hydrate, sleep 8+ hours. This is the most impactful recovery window of your entire week.",
-              "If you're in week 12 specifically and your long run this week is your longest of the base block, consider dropping this to just squat and RDL — two movements, done in 25 minutes."
-            ],
-            exercises: [
-              { name: "Back squat", cue: "Three sets of three at 90%+. These should feel heavy but not maximal — you've been doing this for 12 weeks. Impeccable form, full depth, complete rest between sets. This is maintenance, not testing." },
-              { name: "Romanian deadlift", cue: "Four reps at 85%. Focus on the hamstring stretch at the bottom — slow eccentric, feel the load in your posterior chain. This is the movement most directly keeping your running propulsion muscles strong." },
-              { name: "Bulgarian split squat", cue: "Two sets of four each leg. The reduced volume means you can focus entirely on perfect single-leg mechanics. This is the exercise that has done the most to build your single-leg stability over the past 12 weeks." },
-              { name: "Nordic hamstring curl", cue: "Two sets. Lower as slowly as you can. At this point in the program, this is pure injury prevention maintenance — the hamstrings are a high-risk area in marathon training and this keeps them resilient." },
-              { name: "Calf raise", cue: "Three sets, slow eccentric, full range. This takes 4 minutes and maintains every Achilles adaptation you've built. Don't skip it just because the session is short." }
-            ]
-          },
-          exercises: [
-            { name: "Back squat", scheme: "3×3 @ 90%+ 1RM" },
-            { name: "Romanian deadlift", scheme: "3×4 @ 85% 1RM" },
-            { name: "Bulgarian split squat", scheme: "2×4 each @ 80%" },
-            { name: "Nordic hamstring curl", scheme: "2×4 bodyweight" },
-            { name: "Calf raise", scheme: "3×6 slow eccentric" },
-          ]
-        }
-      ]
-    }
-  ]
+/* =========================================================
+   NYC MARATHON TRAINING — DATA
+   ========================================================= */
+
+const RACE_DATE = '2026-11-01';
+
+const WEEKS = [
+  { n:1,  start:'2026-07-20', end:'2026-07-26', phase:'Base',
+    days:{ mon:{t:'easy',mi:3,label:'3 mi easy'}, tue:{t:'easy',mi:6,label:'6 mi easy'}, wed:{t:'easy',mi:3,label:'3 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'pace',mi:6,label:'6 mi pace'}, sat:{t:'long',mi:13,label:'13 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:31 },
+  { n:2,  start:'2026-07-27', end:'2026-08-02', phase:'Base',
+    days:{ mon:{t:'easy',mi:3,label:'3 mi easy'}, tue:{t:'easy',mi:7,label:'7 mi easy'}, wed:{t:'easy',mi:3,label:'3 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'easy',mi:7,label:'7 mi run'}, sat:{t:'long',mi:14,label:'14 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:34 },
+  { n:3,  start:'2026-08-03', end:'2026-08-09', phase:'Base',
+    days:{ mon:{t:'easy',mi:3,label:'3 mi easy'}, tue:{t:'easy',mi:7,label:'7 mi easy',hill:true}, wed:{t:'easy',mi:3,label:'3 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'pace',mi:7,label:'7 mi pace'}, sat:{t:'long',mi:10,label:'10 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:30 },
+  { n:4,  start:'2026-08-10', end:'2026-08-16', phase:'Build',
+    days:{ mon:{t:'easy',mi:4,label:'4 mi easy'}, tue:{t:'easy',mi:8,label:'8 mi easy'}, wed:{t:'easy',mi:4,label:'4 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'pace',mi:8,label:'8 mi pace'}, sat:{t:'long',mi:16,label:'16 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:40 },
+  { n:5,  start:'2026-08-17', end:'2026-08-23', phase:'Build',
+    days:{ mon:{t:'easy',mi:4,label:'4 mi easy'}, tue:{t:'easy',mi:8,label:'8 mi easy'}, wed:{t:'easy',mi:4,label:'4 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'easy',mi:8,label:'8 mi run'}, sat:{t:'long',mi:17,label:'17 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:41 },
+  { n:6,  start:'2026-08-24', end:'2026-08-30', phase:'Build',
+    days:{ mon:{t:'easy',mi:4,label:'4 mi easy'}, tue:{t:'easy',mi:9,label:'9 mi easy',hill:true}, wed:{t:'easy',mi:4,label:'4 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'pace',mi:7,label:'7 mi pace'}, sat:{t:'long',mi:13,label:'13 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:37 },
+  { n:7,  start:'2026-08-31', end:'2026-09-06', phase:'Build',
+    days:{ mon:{t:'easy',mi:4,label:'4 mi easy'}, tue:{t:'easy',mi:9,label:'9 mi easy'}, wed:{t:'easy',mi:4,label:'4 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'pace',mi:9,label:'9 mi pace'}, sat:{t:'long',mi:19,label:'19 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:45 },
+  { n:8,  start:'2026-09-07', end:'2026-09-13', phase:'Peak',
+    days:{ mon:{t:'easy',mi:5,label:'5 mi easy'}, tue:{t:'easy',mi:10,label:'10 mi easy'}, wed:{t:'easy',mi:5,label:'5 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'easy',mi:10,label:'10 mi run'}, sat:{t:'long',mi:20,label:'20 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:50 },
+  { n:9,  start:'2026-09-14', end:'2026-09-20', phase:'Race Prep',
+    days:{ mon:{t:'easy',mi:5,label:'5 mi easy'}, tue:{t:'easy',mi:6,label:'6 mi easy'}, wed:{t:'easy',mi:5,label:'5 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'rest',mi:0,label:'Rest'}, sat:{t:'shakeout',mi:3,label:'3 mi shakeout'}, sun:{t:'race',mi:13.1,label:'Garmin Half Marathon'} },
+    total:32.1 },
+  { n:10, start:'2026-09-21', end:'2026-09-27', phase:'Peak',
+    days:{ mon:{t:'easy',mi:5,label:'5 mi easy'}, tue:{t:'easy',mi:10,label:'10 mi easy',hill:true}, wed:{t:'easy',mi:5,label:'5 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'pace',mi:10,label:'10 mi pace'}, sat:{t:'long',mi:20,label:'20 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:50 },
+  { n:11, start:'2026-09-28', end:'2026-10-04', phase:'Cutback',
+    days:{ mon:{t:'easy',mi:5,label:'5 mi easy'}, tue:{t:'easy',mi:6,label:'6 mi easy'}, wed:{t:'easy',mi:5,label:'5 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'easy',mi:6,label:'6 mi run'}, sat:{t:'long',mi:12,label:'12 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:34 },
+  { n:12, start:'2026-10-05', end:'2026-10-11', phase:'Peak',
+    days:{ mon:{t:'easy',mi:5,label:'5 mi easy'}, tue:{t:'easy',mi:10,label:'10 mi easy'}, wed:{t:'easy',mi:5,label:'5 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'pace',mi:10,label:'10 mi pace'}, sat:{t:'long',mi:20,label:'20 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:50 },
+  { n:13, start:'2026-10-12', end:'2026-10-18', phase:'Taper',
+    days:{ mon:{t:'easy',mi:5,label:'5 mi easy'}, tue:{t:'easy',mi:8,label:'8 mi easy',hill:true}, wed:{t:'easy',mi:5,label:'5 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'pace',mi:4,label:'4 mi pace'}, sat:{t:'long',mi:12,label:'12 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:34 },
+  { n:14, start:'2026-10-19', end:'2026-10-25', phase:'Taper',
+    days:{ mon:{t:'easy',mi:4,label:'4 mi easy'}, tue:{t:'easy',mi:6,label:'6 mi easy'}, wed:{t:'easy',mi:4,label:'4 mi easy'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'easy',mi:4,label:'4 mi run'}, sat:{t:'long',mi:8,label:'8 mi long run'}, sun:{t:'cross',mi:0,label:'Cross-training'} },
+    total:26 },
+  { n:15, start:'2026-10-26', end:'2026-11-01', phase:'Race Week',
+    days:{ mon:{t:'easy',mi:3,label:'3 mi easy'}, tue:{t:'easy',mi:4,label:'4 mi easy'}, wed:{t:'rest',mi:0,label:'Rest'}, thu:{t:'rest',mi:0,label:'Rest'}, fri:{t:'easy',mi:2,label:'2 mi shakeout'}, sat:{t:'rest',mi:0,label:'Rest'}, sun:{t:'race',mi:26.2,label:'NYC Marathon'} },
+    total:35.2 },
+];
+
+const DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const DAY_NAMES = {mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
+
+/* =========================================================
+   STRENGTH — EXERCISE LIBRARY
+   ========================================================= */
+
+const EXERCISES = {
+  deadlift: { name:'Trap Bar Deadlift or Back Squat', sets:'3-4 x 4-6', tag:'Heavy compound',
+    why:"This is the primary heavy stimulus. Twice-weekly heavy-load lifting is what the research (Millet et al. 2002, Li et al. 2021) ties to real running economy gains — roughly 6-7% improvement in studies. It builds the raw force production your stride depends on late in the race.",
+    how:"Full stance width, brace your core before you unrack, drive through the whole foot, and control the lowering phase instead of dropping into it. Pick a load where reps 5-6 are genuinely hard but your form doesn't break down — 2-3 reps left in the tank." },
+  stepdown: { name:'Eccentric Step-Down', sets:'3 x 8/side', tag:'Downhill prep',
+    why:"This is the single most important exercise for the quad soreness you had at Flying Pig. NYC's descents off the Verrazzano, Queensboro, and Fifth Avenue into Central Park all demand your quads act as brakes. This exercise trains exactly that braking (eccentric) contraction.",
+    how:"Stand on a 6-8\" box or step. Slowly lower your free leg to lightly tap the floor over a 3-4 count, keeping your standing knee tracking over your toes. Step back up with control. Slow and controlled beats heavy here." },
+  slrdl: { name:'Single-Leg Romanian Deadlift', sets:'3 x 8/side', tag:'Hamstring + balance',
+    why:"Hamstring strength and balance that holds your running form together in the final miles, when fatigue makes everything want to collapse.",
+    how:"Hinge at the hips with a soft bend in the standing knee, letting your free leg reach back as your torso lowers toward parallel. Keep your hips square. Return to standing under control." },
+  hipthrust: { name:'Hip Thrust', sets:'3 x 8', tag:'Glute power',
+    why:"Glute strength drives stride length and power, and protects against the late-race form collapse — the moment your hips stop firing and your stride shortens and slows.",
+    how:"Upper back braced on a bench, feet flat, drive your hips up through your heels until fully extended and squeeze your glutes at the top. Lower with control, don't let your hips drop fast." },
+  calfraise: { name:'Standing Calf Raise', sets:'3 x 10-12', tag:'Cramp prevention',
+    why:"Calves are one of the most common cramping sites in a marathon. Building real strength capacity here — not just endurance — is directly protective.",
+    how:"Slow 2-count up onto your toes, brief pause at the top, slow 3-count back down through a full range of motion. Add weight (dumbbells, a barbell, or a machine) as it gets easy." },
+  plank: { name:'Side Plank or Copenhagen Plank', sets:'2 x 30-45s/side', tag:'Hip/core stability',
+    why:"Keeps your hips and core from collapsing sideways when you're fatigued — this is what holds your stride mechanics together late in the race.",
+    how:"Elbow stacked under your shoulder, body in a straight line from head to heels, hips lifted. For the Copenhagen variation, rest your top foot on a bench for a bigger hip-adductor load." },
+  bulgarian: { name:'Bulgarian Split Squat (slow eccentric)', sets:'3 x 6-8/side', tag:'Single-leg + eccentric',
+    why:"Single-leg strength that mirrors actual running mechanics — you run on one leg at a time — with the slow lowering adding the same eccentric quad loading as the Eccentric Step-Down.",
+    how:"Rear foot elevated on a bench behind you, front foot far enough forward that your knee stays over your ankle. Lower over a 3-count until your front thigh is near parallel, then drive back up." },
+  bandwalk: { name:'Lateral Band Walk / Side-Lying Hip Abduction', sets:'3 x 10-12/side', tag:'Hip stability — NYC bridges',
+    why:"Strengthens glute medius, the muscle that controls sideways sway. This is aimed squarely at the hip soreness you had last time — it's what stabilizes your hip on cambered bridge decks and controls lateral drift on the downhills.",
+    how:"Band around your ankles or just above your knees. Stay in a slight squat and step sideways while keeping tension on the band the entire time. Don't let your knees cave inward." },
+  plyo: { name:'Low-Volume Plyometrics (pogo hops, low bounds)', sets:'2-3 x 15-20s', tag:'Running economy',
+    why:"Builds tendon stiffness and neuromuscular efficiency — another lever for running economy. Kept short and low-volume so it adds a training stimulus without piling on extra fatigue.",
+    how:"Quick, small ground contacts — think 'stiff spring,' not a big jump. Focus on minimizing time on the ground, not on jumping high." },
+  slcalf: { name:'Single-Leg Calf Raise + Tibialis Raise', sets:'3 x 12-15/side', tag:'Calf + shin',
+    why:"Single-leg calf strength for cramp prevention, plus shin (tibialis) strength to protect against shin splints as your weekly mileage climbs.",
+    how:"Single-leg calf raise off a step, full range of motion. For the tibialis raise, prop your heels on a small block or plate and lift just your toes up toward your shins." },
+  pallof: { name:'Pallof Press', sets:'3 x 10/side', tag:'Anti-rotation core',
+    why:"Anti-rotation core strength that keeps your trunk steady in the final miles, when everything wants to twist and your form starts compensating.",
+    how:"Band or cable anchored at chest height, standing perpendicular to the anchor. Press straight out in front of your chest and resist the pull trying to rotate your torso. Slow return." },
+  slglute: { name:'Single-Leg Glute Bridge', sets:'3 x 10/side', tag:'Unilateral glute',
+    why:"Unilateral glute work that's closer to the actual single-leg demand of running than a standard two-leg bridge.",
+    how:"One foot on the ground, opposite leg extended or bent. Drive your hips up, squeeze at the top, lower with control." },
+  goblet: { name:'Goblet Squat', sets:'3 x 10', tag:'General strength',
+    why:"General lower-body strength base-building without excess fatigue — ideal filler on a lower-mileage week when you're not pushing max loads.",
+    how:"Hold a dumbbell or kettlebell at your chest, squat to a comfortable depth while keeping your torso upright, drive back up through your whole foot." },
+  hipmobility: { name:'90-90 Hip Mobility / Hip Circles', sets:'2 x 8-10/side', tag:'Mobility — don\'t skip',
+    why:"Your Garmin data from your last training block flagged dropped strength and mobility work late in the block as tied directly to your cramping. This keeps hip mobility in every single week's rotation, not just when it's convenient.",
+    how:"Sit in a 90-90 position (front shin and back shin both at 90 degrees) and rotate through both hips. Or standing hip circles, moving each hip through its full range in both directions." },
+  deadbug: { name:'Dead Bug or Bird Dog', sets:'2 x 10/side', tag:'Low-fatigue core',
+    why:"Core stability trained without adding real fatigue — a good fit on a lighter auxiliary day.",
+    how:"Dead bug: on your back, low back flat on the floor, extend opposite arm and leg without letting your back arch. Bird dog: same idea on hands and knees, keeping your spine neutral." },
+  couchstretch: { name:'Couch Stretch / Quad-Hip Flexor Stretch', sets:'2 x 45-60s/side', tag:'Quad/hip mobility',
+    why:"Directly targets quad and hip flexor tightness — the exact area that was sore after your first marathon. Tight hip flexors also change your stride mechanics as fatigue sets in.",
+    how:"Rear knee down with your rear foot up against a wall or couch, front foot forward in a lunge position. Gently drive your hips forward until you feel a stretch through the front of your hip and quad." },
 };
 
-// ── STATE ──
-let logs = JSON.parse(localStorage.getItem('mlogs') || '{}');
-let currentWeek = parseInt(localStorage.getItem('mweek') || '1');
-let selectedDayId = 'A';
-let currentExercise = null;
-let currentPhaseIdx = 0;
-let timerInterval = null;
-let timerSeconds = 180;
-let timerMax = 180;
-let timerRunning = false;
+const SESSIONS = {
+  A: { name:'Session A — Heavy Lower + Posterior Chain', duration:'~40-45 min', exercises:['deadlift','stepdown','slrdl','hipthrust','calfraise','plank'] },
+  B: { name:'Session B — Power, Stability & Durability', duration:'~35-40 min', exercises:['bulgarian','bandwalk','plyo','slcalf','pallof','slglute'] },
+  C: { name:'Session C — Auxiliary & Mobility', duration:'~20-25 min', exercises:['goblet','hipmobility','deadbug','couchstretch'] },
+};
 
-function saveData() { localStorage.setItem('mlogs', JSON.stringify(logs)); }
+/* Per-week lift schedule: which days get which session, plus a coaching note */
+const LIFT_SCHEDULE = {
+  1:  { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'},{day:'sun',s:'C'}], note:'Base phase — moderate loads, dial in form. 3 sessions while running volume is still low.' },
+  2:  { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'},{day:'sun',s:'C'}], note:'Same as last week — moderate loads, build consistency.' },
+  3:  { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'},{day:'sun',s:'C'}], note:'First downhill running session this week (see Tuesday). Keep lifting loads moderate — you don\'t need to push both at once.' },
+  4:  { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'Dropping to 2x/week as running volume increases. Loads go up — push Session A to a real heavy effort.' },
+  5:  { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'Standard build-phase dosage.' },
+  6:  { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'2nd downhill running session this week (Tuesday) — can be a bit more aggressive than week 3.' },
+  7:  { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'Standard build-phase dosage. This is your longest long run yet (19 mi) — make sure Monday\'s lift isn\'t too close to full fatigue.' },
+  8:  { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'Peak week before the half marathon. Drop one set from every exercise — protect the 20-miler and the race next week.' },
+  9:  { lifts:[{day:'mon',s:'A'}], note:'Half marathon mini-taper — one light session only, loads ~30% lighter, skip Session B entirely and let the race go clean.' },
+  10: { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'3rd downhill running session this week (Tuesday). Back to standard loads after last week\'s reduction.' },
+  11: { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'},{day:'sun',s:'C'}], note:'Cutback mileage week — good window to add the 3rd session back and push loads a little.' },
+  12: { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'Peak week (20-miler). Drop one set from every exercise again — protect the long run.' },
+  13: { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'Final downhill running session this week (Tuesday), ~2.5 weeks out — enough time to fully recover before race day. Start the strength taper: cut sets by about half, drop all plyos, keep loads moderate-heavy.' },
+  14: { lifts:[{day:'mon',s:'A'},{day:'thu',s:'B'}], note:'Continue at ~50% volume. Nothing new added this late — just hold what you\'ve built.' },
+  15: { lifts:[{day:'mon',s:'A'}], note:'Race week. One short bodyweight activation session Monday only, ~15 min, no soreness risk. Nothing after Tuesday.' },
+};
 
-function getPhaseForWeek(w) {
-  for (let i = 0; i < PROGRAM.phases.length; i++) {
-    if (PROGRAM.phases[i].weeks.includes(w)) return i;
+const HILL_NOTE = "Add a downhill running segment to today's run: find a moderate grade (4-6%), run controlled repeats totaling ~15-20 min, short quick steps, avoid overstriding/braking hard. This is timed for the repeated bout effect — a single dose gives your quads weeks of protective adaptation against the NYC bridges and the Fifth Avenue descent into Central Park.";
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function pad(n){ return n < 10 ? '0'+n : ''+n; }
+function toISO(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function parseISO(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+
+function findWeekForDate(dateISO){
+  const d = parseISO(dateISO);
+  for(const w of WEEKS){
+    const s = parseISO(w.start), e = parseISO(w.end);
+    if(d >= s && d <= e) return w;
   }
-  return 0;
+  return null;
 }
 
-function getDayKey(week, dayId) { return `w${week}_${dayId}`; }
-
-// ── SCREEN NAV ──
-function showScreen(name, btn) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  if (btn) btn.classList.add('active');
-  if (name === 'history') renderHistory();
-  if (name === 'progress') renderProgress();
-  if (name === 'runs') renderRuns();
+function dayKeyForDate(dateISO){
+  const d = parseISO(dateISO);
+  const idx = d.getDay(); // 0=Sun..6=Sat
+  return ['sun','mon','tue','wed','thu','fri','sat'][idx];
 }
 
-// ── TODAY ──
-function renderToday() {
-  const now = new Date();
-  document.getElementById('today-date').textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+function daysUntilRace(dateISO){
+  const d = parseISO(dateISO), r = parseISO(RACE_DATE);
+  return Math.round((r - d) / 86400000);
+}
 
-  currentPhaseIdx = getPhaseForWeek(currentWeek);
-  const phase = PROGRAM.phases[currentPhaseIdx];
-  document.getElementById('phase-badge').textContent = `Phase ${currentPhaseIdx+1} · Wk ${currentWeek}`;
+/* =========================================================
+   RENDER — PLAN TAB
+   ========================================================= */
 
-  // Week selector
-  const ds = document.getElementById('day-selector');
-  ds.innerHTML = '';
-  for (let w = 1; w <= 12; w++) {
-    const chip = document.createElement('button');
-    chip.className = 'day-chip' + (w === currentWeek ? ' active' : '');
-    chip.textContent = `Wk ${w}`;
-    chip.onclick = () => { currentWeek = w; localStorage.setItem('mweek', w); renderToday(); };
-    ds.appendChild(chip);
-  }
-
-  // Workout cards
-  const list = document.getElementById('workout-list');
-  list.innerHTML = '';
-  phase.days.forEach(day => {
-    const key = getDayKey(currentWeek, day.id);
-    const logged = logs[key] || {};
-    const doneCount = Object.keys(logged).length;
-
-    const card = document.createElement('div');
-    card.className = 'workout-card';
-    const isOpen = day.id === selectedDayId;
-
-    card.innerHTML = `
-      <div class="workout-header" onclick="toggleDay('${day.id}', this)">
-        <div>
-          <div class="workout-type type-${day.type}">${day.label}</div>
-          <div class="workout-name">${day.name}</div>
-          <div class="workout-when">${day.when}</div>
-        </div>
-        <div class="expand-icon ${isOpen ? 'open' : ''}">⌄</div>
+function renderPlan(){
+  const el = document.getElementById('tab-plan');
+  let html = '<div class="section-head"><h2>15-Week Plan</h2><p class="sub">7/20 &mdash; 11/1, NYC Marathon</p></div>';
+  html += '<div class="week-list">';
+  for(const w of WEEKS){
+    html += `<div class="week-card">
+      <div class="week-card-head">
+        <span class="week-num">W${w.n}</span>
+        <span class="week-dates">${fmtDateRange(w.start,w.end)}</span>
+        <span class="week-phase phase-${w.phase.toLowerCase().replace(' ','-')}">${w.phase}</span>
       </div>
-      <div class="exercise-rows" style="display:${isOpen ? 'block' : 'none'}" id="rows-${day.id}">
-
-        <!-- WARMUP PANEL -->
-        <div class="guide-toggle" onclick="togglePanel('warmup-${day.id}', this)">
-          <div class="guide-toggle-label">🔥 Warm-up · ${day.warmup.duration}</div>
-          <div class="guide-chevron" id="warmup-chev-${day.id}">⌄</div>
-        </div>
-        <div class="guide-panel" id="warmup-${day.id}">
-          <div class="guide-section-title">Pre-session routine</div>
-          <ul class="guide-checklist">
-            ${day.warmup.steps.map(s => `
-              <li>
-                <span class="guide-check">${s.icon}</span>
-                <span><strong>${s.label}</strong> — ${s.detail}</span>
-              </li>`).join('')}
-          </ul>
-        </div>
-
-        <!-- GUIDE PANEL -->
-        <div class="guide-toggle" onclick="togglePanel('guide-${day.id}', this)">
-          <div class="guide-toggle-label">📋 Workout guide & cues</div>
-          <div class="guide-chevron" id="guide-chev-${day.id}">⌄</div>
-        </div>
-        <div class="guide-panel" id="guide-${day.id}">
-          <div class="guide-benefit">${day.guide.benefit}</div>
-          <div class="guide-section-title">Before you start</div>
-          <ul class="guide-checklist">
-            ${day.guide.checklist.map(c => `
-              <li><span class="guide-check">✓</span><span>${c}</span></li>`).join('')}
-          </ul>
-          <div class="guide-section-title">Exercise cues</div>
-          <ul class="guide-ex-list">
-            ${day.guide.exercises.map(e => `
-              <li class="guide-ex-item">
-                <div class="guide-ex-name">${e.name}</div>
-                <div class="guide-ex-cue">${e.cue}</div>
-              </li>`).join('')}
-          </ul>
-        </div>
-
-        <!-- EXERCISES -->
-        ${day.exercises.map(ex => {
-          const exLog = logged[ex.name];
-          const setsDone = exLog ? exLog.sets.length : 0;
-          return `
-            <div class="exercise-row" onclick="openModal('${day.id}', '${ex.name.replace(/'/g,"\\'")}', '${ex.scheme}')">
-              <div class="ex-info">
-                <div class="ex-name-row">${ex.name}</div>
-                <div class="ex-scheme">${ex.scheme}</div>
-              </div>
-              <div class="ex-sets-done ${setsDone === 0 ? 'none' : ''}">${setsDone > 0 ? setsDone + ' sets' : 'tap to log'}</div>
-            </div>`;
-        }).join('')}
+      <div class="day-row">`;
+    for(const dk of DAY_KEYS){
+      const day = w.days[dk];
+      html += `<div class="day-cell type-${day.t}">
+        <div class="day-abbr">${dk.toUpperCase()}</div>
+        <div class="day-mi">${day.mi > 0 ? day.mi : '&mdash;'}</div>
+        <div class="day-label">${day.label}${day.hill ? ' <span class="hill-tag">+hills</span>' : ''}</div>
       </div>`;
-    list.appendChild(card);
-  });
+    }
+    html += `</div>
+      <div class="week-total">Total: <strong>${w.total} mi</strong></div>
+    </div>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
 }
 
-function togglePanel(panelId, toggleEl) {
-  const panel = document.getElementById(panelId);
-  const chev = toggleEl.querySelector('.guide-chevron');
-  if (!panel) return;
-  const isOpen = panel.style.display === 'block';
-  panel.style.display = isOpen ? 'none' : 'block';
-  if (chev) chev.classList.toggle('open', !isOpen);
+function fmtDateRange(startISO, endISO){
+  const s = parseISO(startISO), e = parseISO(endISO);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[s.getMonth()]} ${s.getDate()} &ndash; ${months[e.getMonth()]} ${e.getDate()}`;
 }
 
-function toggleDay(dayId, headerEl) {
-  selectedDayId = dayId;
-  document.querySelectorAll('.exercise-rows').forEach(r => r.style.display = 'none');
-  document.querySelectorAll('.expand-icon').forEach(i => i.classList.remove('open'));
-  const rows = document.getElementById('rows-' + dayId);
-  if (rows) { rows.style.display = 'block'; headerEl.querySelector('.expand-icon').classList.add('open'); }
-}
+/* =========================================================
+   RENDER — TODAY TAB
+   ========================================================= */
 
-// ── MODAL ──
-function openModal(dayId, exName, scheme) {
-  currentExercise = { dayId, exName, scheme };
-  document.getElementById('modal-title').textContent = exName;
-  document.getElementById('modal-sub').textContent = scheme;
+function renderToday(){
+  const el = document.getElementById('tab-today');
+  const todayISO = toISO(new Date());
+  const week = findWeekForDate(todayISO);
+  const dLeft = daysUntilRace(todayISO);
 
-  const key = getDayKey(currentWeek, dayId);
-  const existing = (logs[key] && logs[key][exName]) ? logs[key][exName].sets : [];
+  let html = '<div class="section-head"><h2>Today</h2>';
+  html += `<p class="sub">${dLeft >= 0 ? dLeft + ' days to race day' : 'Race complete \u2014 great work'}</p></div>`;
 
-  const rows = document.getElementById('set-rows');
-  rows.innerHTML = '';
-  if (existing.length > 0) {
-    existing.forEach((s, i) => addSetRow(s.weight, s.reps, s.rpe));
+  if(!week){
+    html += '<div class="card"><p>Today falls outside the 15-week plan window.</p></div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  const dk = dayKeyForDate(todayISO);
+  const day = week.days[dk];
+
+  html += `<div class="card today-run">
+    <div class="card-eyebrow">Week ${week.n} &middot; ${DAY_NAMES[dk]}</div>
+    <div class="today-run-main">
+      <span class="today-mi">${day.mi > 0 ? day.mi : '\u2014'}</span>
+      <span class="today-run-label">${day.label}</span>
+    </div>
+    ${day.hill ? `<div class="hill-callout">${HILL_NOTE}</div>` : ''}
+  </div>`;
+
+  // Weather card
+  html += `<div class="card" id="weather-card">
+    <div class="card-eyebrow">Weather</div>
+    <div id="weather-body"><p class="muted">Loading forecast&hellip;</p></div>
+  </div>`;
+
+  // Lift card
+  const sched = LIFT_SCHEDULE[week.n];
+  const liftToday = sched.lifts.find(l => l.day === dk);
+  if(liftToday){
+    const session = SESSIONS[liftToday.s];
+    html += `<div class="card today-lift">
+      <div class="card-eyebrow">Tonight's Lift</div>
+      <div class="today-lift-name">${session.name}</div>
+      <div class="today-lift-meta">${session.duration}</div>
+      <p class="week-note">${sched.note}</p>
+      <a class="btn-link" data-goto="strength">View full workout &rarr;</a>
+    </div>`;
   } else {
-    addSetRow(); addSetRow(); addSetRow();
+    html += `<div class="card today-lift no-lift">
+      <div class="card-eyebrow">Tonight's Lift</div>
+      <p class="muted">No lift scheduled today. Rest up.</p>
+    </div>`;
   }
 
-  resetTimer();
-  document.getElementById('modal-overlay').classList.add('open');
+  el.innerHTML = html;
+
+  // wire up nav link
+  const link = el.querySelector('[data-goto="strength"]');
+  if(link) link.addEventListener('click', () => switchTab('strength'));
+
+  loadWeather();
 }
 
-function addSetRow(weight='', reps='', rpe='') {
-  const rows = document.getElementById('set-rows');
-  const idx = rows.children.length + 1;
-  const div = document.createElement('div');
-  div.className = 'set-log-row';
-  div.innerHTML = `
-    <div class="set-num">${idx}</div>
-    <input class="set-input" type="number" placeholder="lbs" value="${weight}" inputmode="decimal">
-    <input class="set-input" type="number" placeholder="reps" value="${reps}" inputmode="numeric">
-    <input class="set-input" type="number" placeholder="1–10" value="${rpe}" min="1" max="10" inputmode="decimal" step="0.5">
-  `;
-  rows.appendChild(div);
-}
+const WEATHER_CODES = {
+  0:'Clear sky',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',
+  45:'Fog',48:'Fog',
+  51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',
+  61:'Light rain',63:'Rain',65:'Heavy rain',
+  66:'Freezing rain',67:'Freezing rain',
+  71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',
+  80:'Rain showers',81:'Rain showers',82:'Violent showers',
+  85:'Snow showers',86:'Snow showers',
+  95:'Thunderstorm',96:'Thunderstorm w/ hail',99:'Thunderstorm w/ hail',
+};
 
-function saveExercise() {
-  if (!currentExercise) return;
-  const rows = document.getElementById('set-rows').children;
-  const sets = [];
-  for (let r of rows) {
-    const inputs = r.querySelectorAll('input');
-    const weight = inputs[0].value;
-    const reps = inputs[1].value;
-    const rpe = inputs[2].value;
-    if (weight || reps) sets.push({ weight, reps, rpe });
+function loadWeather(){
+  const body = document.getElementById('weather-body');
+  const saved = localStorage.getItem('nycmp_location');
+
+  function fetchFor(lat, lon, label){
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&temperature_unit=fahrenheit&wind_speed_unit=mph`;
+    fetch(url).then(r => r.json()).then(data => {
+      const c = data.current;
+      const desc = WEATHER_CODES[c.weather_code] || 'Conditions unavailable';
+      body.innerHTML = `
+        <div class="weather-main">
+          <span class="weather-temp">${Math.round(c.temperature_2m)}&deg;F</span>
+          <span class="weather-desc">${desc}</span>
+        </div>
+        <div class="weather-details">
+          <span>Wind ${Math.round(c.wind_speed_10m)} mph</span>
+          <span>Humidity ${c.relative_humidity_2m}%</span>
+        </div>
+        <div class="weather-loc">${label} &middot; <button class="link-btn" id="change-loc">change location</button></div>
+      `;
+      document.getElementById('change-loc').addEventListener('click', promptLocation);
+    }).catch(() => {
+      body.innerHTML = '<p class="muted">Couldn\'t load the forecast right now.</p>';
+    });
   }
-  if (sets.length === 0) { closeModal(); return; }
 
-  const key = getDayKey(currentWeek, currentExercise.dayId);
-  if (!logs[key]) logs[key] = {};
-  logs[key][currentExercise.exName] = { sets, date: new Date().toISOString() };
-  saveData();
-  closeModal();
+  if(saved){
+    const loc = JSON.parse(saved);
+    fetchFor(loc.lat, loc.lon, loc.label);
+  } else if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const loc = { lat:pos.coords.latitude, lon:pos.coords.longitude, label:'Current location' };
+        localStorage.setItem('nycmp_location', JSON.stringify(loc));
+        fetchFor(loc.lat, loc.lon, loc.label);
+      },
+      () => {
+        // fallback: Cincinnati, OH
+        const loc = { lat:39.1031, lon:-84.5120, label:'Cincinnati, OH' };
+        fetchFor(loc.lat, loc.lon, loc.label);
+      }
+    );
+  } else {
+    const loc = { lat:39.1031, lon:-84.5120, label:'Cincinnati, OH' };
+    fetchFor(loc.lat, loc.lon, loc.label);
+  }
+}
+
+function promptLocation(){
+  const input = prompt('Enter a city (we\'ll geocode it):', '');
+  if(!input) return;
+  fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(input)}&count=1`)
+    .then(r => r.json())
+    .then(data => {
+      if(data.results && data.results.length){
+        const r = data.results[0];
+        const loc = { lat:r.latitude, lon:r.longitude, label:`${r.name}, ${r.admin1 || r.country}` };
+        localStorage.setItem('nycmp_location', JSON.stringify(loc));
+        loadWeather();
+      } else {
+        alert('Couldn\'t find that location.');
+      }
+    });
+}
+
+/* =========================================================
+   RENDER — STRENGTH TAB
+   ========================================================= */
+
+function renderExerciseCard(exId){
+  const ex = EXERCISES[exId];
+  return `<details class="exercise">
+    <summary>
+      <span class="ex-name">${ex.name}</span>
+      <span class="ex-sets">${ex.sets}</span>
+    </summary>
+    <div class="ex-body">
+      <span class="ex-tag">${ex.tag}</span>
+      <p><strong>Why it helps the marathon:</strong> ${ex.why}</p>
+      <p><strong>How to perform it:</strong> ${ex.how}</p>
+    </div>
+  </details>`;
+}
+
+function renderSessionBlock(sessionKey){
+  const s = SESSIONS[sessionKey];
+  let html = `<div class="session-block">
+    <div class="session-head"><span class="session-name">${s.name}</span><span class="session-dur">${s.duration}</span></div>`;
+  for(const exId of s.exercises){
+    html += renderExerciseCard(exId);
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderStrength(){
+  const el = document.getElementById('tab-strength');
+  let html = '<div class="section-head"><h2>Strength Plan</h2><p class="sub">Optimized around your running schedule &middot; evenings &middot; hill/quad-durability focus</p></div>';
+
+  html += `<div class="card intro-card">
+    <p>NYC isn't flat — the Verrazzano start, the Queensboro Bridge climb around mile 15-16, and the Fifth Avenue climb into Central Park at mile 22-23 (when your legs are already cooked) all come with descents that load your quads and hips hard. This plan runs 2-3 lifts a week and adds targeted eccentric quad and hip-stability work, plus dedicated downhill running sessions timed around the <em>repeated bout effect</em> &mdash; a single downhill exposure gives your quads weeks of protective adaptation, so the sessions are spaced out, not stacked.</p>
+  </div>`;
+
+  html += '<div class="week-list">';
+  for(const w of WEEKS){
+    const sched = LIFT_SCHEDULE[w.n];
+    if(!sched) continue;
+    html += `<div class="week-card">
+      <div class="week-card-head">
+        <span class="week-num">W${w.n}</span>
+        <span class="week-dates">${fmtDateRange(w.start,w.end)}</span>
+        <span class="week-phase phase-${w.phase.toLowerCase().replace(' ','-')}">${w.phase}</span>
+      </div>
+      <p class="week-note">${sched.note}</p>`;
+    for(const lift of sched.lifts){
+      html += `<div class="lift-day-label">${DAY_NAMES[lift.day]}</div>`;
+      html += renderSessionBlock(lift.s);
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* =========================================================
+   TAB SWITCHING
+   ========================================================= */
+
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+
+function init(){
+  renderPlan();
   renderToday();
-}
+  renderStrength();
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-  stopTimer();
-  currentExercise = null;
-}
-
-function closeModalIfOutside(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
-}
-
-// ── TIMER ──
-function setTimer(secs) {
-  timerMax = secs; timerSeconds = secs;
-  stopTimer();
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  updateTimerDisplay();
-}
-
-function toggleTimer() {
-  if (timerRunning) { stopTimer(); }
-  else { startTimer(); }
-}
-
-function startTimer() {
-  timerRunning = true;
-  document.getElementById('timer-start-btn').textContent = 'Pause';
-  timerInterval = setInterval(() => {
-    timerSeconds--;
-    if (timerSeconds <= 0) { timerSeconds = 0; stopTimer(); }
-    updateTimerDisplay();
-  }, 1000);
-}
-
-function stopTimer() {
-  timerRunning = false;
-  if (timerInterval) clearInterval(timerInterval);
-  document.getElementById('timer-start-btn').textContent = 'Start';
-}
-
-function resetTimer() {
-  stopTimer(); timerSeconds = timerMax; updateTimerDisplay();
-}
-
-function updateTimerDisplay() {
-  const m = Math.floor(timerSeconds / 60);
-  const s = timerSeconds % 60;
-  const el = document.getElementById('timer-display');
-  el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
-  el.className = 'timer-display' + (timerSeconds <= 30 && timerSeconds > 0 ? ' warning' : '');
-}
-
-// ── HISTORY ──
-function renderHistory() {
-  const list = document.getElementById('history-list');
-  const entries = Object.entries(logs).sort((a,b) => {
-    const aDate = Object.values(a[1])[0]?.date || '';
-    const bDate = Object.values(b[1])[0]?.date || '';
-    return bDate.localeCompare(aDate);
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
-
-  if (entries.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No sessions logged yet.<br>Head to Today to log your first workout.</div>';
-    return;
-  }
-
-  list.innerHTML = entries.map(([key, session]) => {
-    const [, weekPart, dayId] = key.match(/w(\d+)_(\w+)/);
-    const phaseIdx = getPhaseForWeek(parseInt(weekPart));
-    const phase = PROGRAM.phases[phaseIdx];
-    const day = phase.days.find(d => d.id === dayId);
-    if (!day) return '';
-    const firstDate = Object.values(session)[0]?.date;
-    const dateStr = firstDate ? new Date(firstDate).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : '';
-    const exRows = Object.entries(session).map(([exName, exData]) => {
-      const best = exData.sets.reduce((b, s) => parseFloat(s.weight) > parseFloat(b.weight||0) ? s : b, {});
-      return `<div class="history-ex"><span>${exName}</span><span class="history-ex-sets">${exData.sets.length} sets${best.weight ? ' · ' + best.weight + ' lbs' : ''}</span></div>`;
-    }).join('');
-    return `
-      <div class="history-entry">
-        <div class="history-date">${dateStr} · Week ${weekPart}</div>
-        <div class="history-title">${day.name}</div>
-        <div class="history-exercises">${exRows}</div>
-      </div>`;
-  }).join('');
 }
 
-// ── PROGRESS ──
-function renderProgress() {
-  const totalSessions = Object.keys(logs).length;
-  const totalSets = Object.values(logs).reduce((sum, s) => sum + Object.values(s).reduce((a, e) => a + e.sets.length, 0), 0);
-  const currentPhase = getPhaseForWeek(currentWeek);
+document.addEventListener('DOMContentLoaded', init);
 
-  document.getElementById('stat-grid').innerHTML = `
-    <div class="stat-card"><div class="stat-label">Sessions</div><div class="stat-value">${totalSessions}</div><div class="stat-sub">logged total</div></div>
-    <div class="stat-card"><div class="stat-label">Total sets</div><div class="stat-value">${totalSets}</div><div class="stat-sub">across all lifts</div></div>
-    <div class="stat-card"><div class="stat-label">Current week</div><div class="stat-value">${currentWeek}</div><div class="stat-sub">of 12</div></div>
-    <div class="stat-card"><div class="stat-label">Phase</div><div class="stat-value">${currentPhase + 1}</div><div class="stat-sub">${['Foundation','Power','Integration'][currentPhase]}</div></div>
-  `;
-
-  const prs = {};
-  Object.values(logs).forEach(session => {
-    Object.entries(session).forEach(([exName, exData]) => {
-      exData.sets.forEach(set => {
-        const w = parseFloat(set.weight);
-        if (!w) return;
-        if (!prs[exName] || w > prs[exName].weight) {
-          prs[exName] = { weight: w, date: exData.date };
-        }
-      });
-    });
-  });
-
-  const prEntries = Object.entries(prs).sort((a,b) => b[1].weight - a[1].weight);
-  const prList = document.getElementById('pr-list');
-  if (prEntries.length === 0) {
-    prList.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:12px 0">Log some sets to see your personal records here.</div>';
-  } else {
-    prList.innerHTML = prEntries.map(([name, pr]) => {
-      const dateStr = new Date(pr.date).toLocaleDateString('en-US', { month:'short', day:'numeric' });
-      return `<div class="pr-row"><div><div class="pr-ex">${name}</div><div class="pr-date">${dateStr}</div></div><div class="pr-val">${pr.weight} lbs</div></div>`;
-    }).join('');
-  }
-}
-
-// ── RUN DATA ──
-let runs = JSON.parse(localStorage.getItem('mruns') || '[]');
-let selectedRunType = 'Easy';
-
-function saveRunData() { localStorage.setItem('mruns', JSON.stringify(runs)); }
-
-function openRunModal() {
-  document.getElementById('run-modal-date').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-  document.getElementById('run-distance').value = '';
-  document.getElementById('run-pace-min').value = '';
-  document.getElementById('run-pace-sec').value = '';
-  document.getElementById('run-rpe').value = '';
-  document.getElementById('run-hr').value = '';
-  document.getElementById('run-notes').value = '';
-  selectedRunType = 'Easy';
-  document.querySelectorAll('.run-type-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.run-type-btn')[0].classList.add('active');
-  document.getElementById('run-modal-overlay').classList.add('open');
-}
-
-function closeRunModal() {
-  document.getElementById('run-modal-overlay').classList.remove('open');
-}
-
-function closeRunModalIfOutside(e) {
-  if (e.target === document.getElementById('run-modal-overlay')) closeRunModal();
-}
-
-function selectRunType(btn, type) {
-  selectedRunType = type;
-  document.querySelectorAll('.run-type-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function saveRun() {
-  const dist = parseFloat(document.getElementById('run-distance').value);
-  const paceMin = document.getElementById('run-pace-min').value;
-  const paceSec = document.getElementById('run-pace-sec').value;
-  const rpe = document.getElementById('run-rpe').value;
-  const hr = document.getElementById('run-hr').value;
-  const notes = document.getElementById('run-notes').value.trim();
-  if (!dist) { closeRunModal(); return; }
-  const pace = (paceMin || paceSec) ? `${paceMin || '0'}:${(paceSec || '0').padStart(2,'0')}` : null;
-  runs.unshift({ id: Date.now(), type: selectedRunType, distance: dist, pace, rpe, hr: hr || null, notes: notes || null, date: new Date().toISOString() });
-  saveRunData();
-  closeRunModal();
-  renderRuns();
-}
-
-function deleteRun(id) {
-  runs = runs.filter(r => r.id !== id);
-  saveRunData();
-  renderRuns();
-}
-
-function renderRuns() {
-  const list = document.getElementById('run-list');
-  if (!list) return;
-  if (runs.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🏃</div>No runs logged yet.<br>Tap the button above to log your first run.</div>';
-    return;
-  }
-  list.innerHTML = runs.map(r => {
-    const dateStr = new Date(r.date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-    const badgeClass = r.type === 'Long run' ? 'Long' : r.type;
-    const chips = [
-      r.pace ? `⏱ ${r.pace}/mi` : null,
-      r.rpe  ? `RPE ${r.rpe}` : null,
-      r.hr   ? `♥ ${r.hr} bpm` : null,
-    ].filter(Boolean).join(' · ');
-    return `
-      <div class="run-entry">
-        <div class="run-entry-left">
-          <div class="run-entry-date">${dateStr}</div>
-          <div class="run-type-badge ${badgeClass}">${r.type}</div>
-          <div class="run-entry-detail">${chips}</div>
-          ${r.notes ? `<div class="run-entry-notes">${r.notes}</div>` : ''}
-        </div>
-        <div class="run-entry-right">
-          <div class="run-entry-dist">${r.distance}</div>
-          <div class="run-entry-unit">miles</div>
-          <button class="delete-run-btn" onclick="deleteRun(${r.id})">×</button>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-// ── FEEDBACK ──
-async function getFeedback() {
-  const btn = document.getElementById('feedback-btn');
-  const output = document.getElementById('feedback-output');
-
-  const entries = Object.entries(logs);
-  if (entries.length < 2 && runs.length < 2) {
-    output.innerHTML = '<div class="feedback-result">Log at least 2 lifting sessions or runs before requesting feedback.</div>';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Analyzing...';
-  output.innerHTML = '<div class="feedback-result loading">Claude is reviewing your training data...</div>';
-
-  const summary = entries.map(([key, session]) => {
-    const [, weekPart, dayId] = key.match(/w(\d+)_(\w+)/);
-    const phaseIdx = getPhaseForWeek(parseInt(weekPart));
-    const phase = PROGRAM.phases[phaseIdx];
-    const day = phase?.days.find(d => d.id === dayId);
-    const sessionLines = Object.entries(session).map(([exName, exData]) => {
-      const setsStr = exData.sets.map(s => `${s.weight}lbs×${s.reps}${s.rpe ? ' RPE'+s.rpe : ''}`).join(', ');
-      return `  ${exName}: ${setsStr}`;
-    }).join('\n');
-    return `Week ${weekPart}, ${day?.name || dayId}:\n${sessionLines}`;
-  }).join('\n\n');
-
-  const runSummary = runs.slice(0, 14).map(r => {
-    const dateStr = new Date(r.date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-    return `${dateStr}: ${r.type} — ${r.distance}mi${r.pace ? ' @ ' + r.pace + '/mi' : ''}${r.rpe ? ', RPE ' + r.rpe : ''}${r.hr ? ', avg HR ' + r.hr + 'bpm' : ''}${r.notes ? ' [note: ' + r.notes + ']' : ''}`;
-  }).join('\n');
-
-  const prompt = `You are a strength and conditioning coach helping a marathon runner following a 12-week lifting program based on a peer-reviewed meta-analysis (PMC11052887) on strength training and running economy. The program uses high-load training (≥80% 1RM), plyometrics, and complex training 3 days per week (Tuesday, Wednesday, Thursday evenings), while the athlete runs 6 days per week including morning workout runs on Monday and Wednesday, easy runs Tuesday/Thursday/Friday, and a long run Saturday.
-
-LIFTING SESSIONS LOGGED:
-${summary || 'None yet.'}
-
-RUNS LOGGED (most recent first):
-${runSummary || 'None yet.'}
-
-Please give specific, practical feedback covering:
-1. Load progression — are lifting weights moving in the right direction?
-2. Run/lift interaction — are there patterns where hard runs seem to affect lifting RPE or vice versa? Any days where the combined load looks too high?
-3. Heart rate & effort trends — does HR relative to pace suggest improving aerobic fitness or accumulated fatigue? Flag any runs where HR seems high for the effort level logged.
-4. Any red flags (high RPE on easy runs, elevated HR on easy days, stalled lifting loads, back-to-back hard days)
-5. One specific recommendation for the next 7 days
-
-Keep it direct and practical. 3–5 sentences per section. Reference specific dates or sessions where relevant. No generic advice.`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content?.map(b => b.text || '').join('') || 'No response received.';
-    output.innerHTML = `<div class="feedback-result">${text.replace(/\n/g,'<br>')}</div>`;
-  } catch (e) {
-    output.innerHTML = '<div class="feedback-result" style="color:var(--red)">Could not reach Claude. Check your connection and try again.</div>';
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Analyze my training ↗';
-}
-
-// ── INIT ──
-renderToday();
+document.getElementById('countdown').textContent = daysUntilRace(toISO(new Date())) + ' days to race day';
 </script>
 </body>
 </html>
